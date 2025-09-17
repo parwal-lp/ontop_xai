@@ -45,8 +45,8 @@ public class ExplainableAIOntop {
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
-        //String propertyFile = "src/main/resources/example/books/exampleBooks.properties";
-        String propertyFile = "src/main/resources/npd/npd.properties";
+        String propertyFile = "src/main/resources/example/books/exampleBooks.properties";
+        //String propertyFile = "src/main/resources/npd/npd.properties";
         Properties p = new Properties();
         FileInputStream fis = new FileInputStream(propertyFile);
         p.load(fis);

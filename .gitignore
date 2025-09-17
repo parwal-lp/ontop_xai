@@ -37,3 +37,6 @@ plugin-runtime
 # Large files (ABox)
 *.nt
 *.ttl
+
+# Log files
+**/output.txt
