@@ -1,0 +1,39 @@
+# OS X generated files
+.DS_Store
+
+# Maven generated file
+target
+*.versionsBackup
+
+# Eclipse generated files
+.classpath
+.projecttmp.*
+.project
+.pydevproject
+bin
+.settings
+
+# Intellij generated files
+*.iml
+.idea
+
+# VIsual Studio Code generated files
+.vscode
+
+# Protege generated files
+catalog-v*.xml
+
+# Temp files
+*~
+\#*
+tmp.*
+
+# Ontop specific
+plugin-runtime
+
+*.trace.db
+*.log
+
+# Large files (ABox)
+*.nt
+*.ttl

@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OBDA version="1.0">
+    <mappingsMetadata id="books_mappings" version="1.0.2">
+        <description>Mappings for books ontology version 1.0 (mapping version 1.0.2 with new datasource mechanism implemented)</description>   
+    </mappingsMetadata>
+    <dataSource name="books"/>
+    
+    
+    
+    
+    <!-- ######################################## -->
+    <!-- ######## PREFIXES AND TEMPLATES ######## -->
+    <!-- ######################################## -->
+    
+    <prefixes>
+        <prefix name="owl:" namespace="http://www.w3.org/2002/07/owl#"/>
+        <prefix name="rdf:" namespace="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+        <prefix name="xsd:" namespace="http://www.w3.org/2001/XMLSchema#"/>
+        <prefix name=":" namespace="http://www.obdasystems.com/books/"/>
+        <prefix name="xml:" namespace="http://www.w3.org/XML/1998/namespace"/>
+        <prefix name="rdfs:" namespace="http://www.w3.org/2000/01/rdf-schema#"/>
+    </prefixes>
+    
+    <templates>
+        <template>http://www.obdasystems.com/books/editor-{_}</template>
+        <template>http://www.obdasystems.com/books/edition-{_}</template>
+        <template>http://www.obdasystems.com/books/author-{_}</template>
+        <template>http://www.obdasystems.com/books/book-{_}</template>
+        <template>{_}</template>
+    </templates>
+    
+    
+    
+    <!-- ######################################## -->
+    <!-- ############### MAPPINGS ############### -->
+    <!-- ######################################## -->
+    
+    <mappings>
+        <!-- book_view(x, y, "A") -> AudioBook(x) -->
+        <ontologyPredicateComplexMapping id="m_AudioBook_1">
+            <concept string="http://www.obdasystems.com/books/AudioBook">
+                <template>http://www.obdasystems.com/books/book-{code}</template>
+            </concept>
+            <viewAtomsConjunction>
+                <viewAtom>EQUALS(type,'A'^^xsd:string)</viewAtom>
+                <viewAtom>book_view(code,title,type)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- affiliated_writer_view(x, y) -> Author(x) -->
+        <ontologyPredicateMapping id="m_Author_1">
+            <concept string="http://www.obdasystems.com/books/Author">
+                <template>http://www.obdasystems.com/books/author-{code}</template>
+            </concept>
+            <HEAD string="affiliated_writer_view(code, name)"/>
+        </ontologyPredicateMapping>
+        
+        <!-- book_view(x, y, z) -> Book(x) -->
+        <ontologyPredicateMapping id="m_Book_1">
+            <concept string="http://www.obdasystems.com/books/Book">
+                <template>http://www.obdasystems.com/books/book-{code}</template>
+            </concept>
+            <HEAD string="book_view(code, title, type)"/>
+        </ontologyPredicateMapping>
+        
+        <!-- (x, y, z) book_view(x, y, z) AND z="E" -> EBook(x) -->
+        <ontologyPredicateComplexMapping id="m_EBook_1">
+            <concept string="http://www.obdasystems.com/books/E-Book">
+                <template>http://www.obdasystems.com/books/book-{code}</template>
+            </concept>
+            <viewAtomsConjunction>
+                <viewAtom>EQUALS(type,'E'^^xsd:string)</viewAtom>
+                <viewAtom>book_view(code,title,type)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- edition_view(x1,"E",x3,x4,x5,x6) -> EconomicEdition(x1)-->
+        <ontologyPredicateComplexMapping id="m_EconomicEdition_1">
+            <concept string="http://www.obdasystems.com/books/EconomicEdition">
+                <template>http://www.obdasystems.com/books/edition-{code}</template>
+            </concept>
+            <viewAtomsConjunction>
+                <viewAtom>EQUALS(type,'E'^^xsd:string)</viewAtom>
+                <viewAtom>edition_view(code,type,date,edt,id,bk_id)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- edition_view(x1,x2,x3,x4,x5,x6) -> Edition(x) -->
+        <ontologyPredicateMapping id="m_Edition_1">
+            <concept string="http://www.obdasystems.com/books/Edition">
+                <template>http://www.obdasystems.com/books/edition-{code}</template>
+            </concept>
+            <HEAD string="edition_view(code, type, date, edt, id, bk_id)"/>
+        </ontologyPredicateMapping>
+        
+        <!-- (x, y) editor_view(x, y) -> Editor(x) -->
+        <ontologyPredicateMapping id="m_Editor_1">
+            <concept string="http://www.obdasystems.com/books/Editor">
+                <template>http://www.obdasystems.com/books/editor-{code}</template>
+            </concept>
+            <HEAD string="editor_view(code, name)"/>
+        </ontologyPredicateMapping>
+        
+        <!-- on_prob_view(x, y) -> EmergingWriter(x) -->
+        <ontologyPredicateMapping id="m_EmergingWriter_1">
+            <concept string="http://www.obdasystems.com/books/EmergingWriter">
+                <template>http://www.obdasystems.com/books/author-{code}</template>
+            </concept>
+            <HEAD string="on_prob_view(code, name)"/>
+        </ontologyPredicateMapping>
+        
+        <!-- book_view(x, y, "P") -> PrintedBook(x) -->
+        <ontologyPredicateComplexMapping id="m_PrintedBook_1">
+            <concept string="http://www.obdasystems.com/books/PrintedBook">
+                <template>http://www.obdasystems.com/books/book-{code}</template>
+            </concept>
+            <viewAtomsConjunction>
+                <viewAtom>EQUALS(type,'P'^^xsd:string)</viewAtom>
+                <viewAtom>book_view(code,title,type)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- edition_view(x1,"S",x3,x4,x5,x6) -> SpecialEdition(x1) -->
+        <ontologyPredicateComplexMapping id="m_SpecialEdition_1">
+            <concept string="http://www.obdasystems.com/books/SpecialEdition">
+                <template>http://www.obdasystems.com/books/edition-{code}</template>
+            </concept>
+            <viewAtomsConjunction>
+                <viewAtom>EQUALS(type,'S'^^xsd:string)</viewAtom>
+                <viewAtom>edition_view(code,type,date,edt,id,bk_id)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- unedited_book_view(x) -> UneditedBook(x) -->
+        <ontologyPredicateMapping id="m_UneditedBook_1">
+            <concept string="http://www.obdasystems.com/books/UneditedBook">
+                <template>http://www.obdasystems.com/books/book-{code}</template>
+            </concept>
+            <HEAD string="unedited_book_view(code)"/>
+        </ontologyPredicateMapping>
+        
+        <!-- affiliated_writer_view(x, y) AND y!=NULL -> author_name(x, y) -->
+        <ontologyPredicateComplexMapping id="m_author_name_1">
+            <attribute string="http://www.obdasystems.com/books/name">
+                <domainTemplate>http://www.obdasystems.com/books/author-{code}</domainTemplate>
+                <rangeVariable>name</rangeVariable>
+            </attribute>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(name)</viewAtom>
+                <viewAtom>affiliated_writer_view(code,name)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- book_view(x, y, z) AND y!=NULL ->  book_title(x, y) -->
+        <ontologyPredicateComplexMapping id="m_book_title_1">
+            <attribute string="http://www.obdasystems.com/books/title">
+                <domainTemplate>http://www.obdasystems.com/books/book-{code}</domainTemplate>
+                <rangeVariable>title</rangeVariable>
+            </attribute>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(title)</viewAtom>
+                <viewAtom>book_view(code,title,type)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- edition_view(x1,x2,x3,x4,x5,x6) AND x3!=NULL -> date_of_publication(x1, x3) -->
+        <ontologyPredicateComplexMapping id="m_date_of_publication_1">
+            <attribute string="http://www.obdasystems.com/books/dateOfPublication">
+                <domainTemplate>http://www.obdasystems.com/books/edition-{code}</domainTemplate>
+                <rangeVariable>date</rangeVariable>
+            </attribute>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(date)</viewAtom>
+                <viewAtom>edition_view(code,type,date,edt,id,bk_id)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- edition_view(x1,x2,x3,x4,x5,x6) AND x4!=NULL -> edited_by(x1, x5) -->
+        <ontologyPredicateComplexMapping id="m_edited_by_1">
+            <role string="http://www.obdasystems.com/books/editedBy">
+                <domainTemplate>http://www.obdasystems.com/books/edition-{code}</domainTemplate>
+                <rangeTemplate>http://www.obdasystems.com/books/editor-{id}</rangeTemplate>
+            </role>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(edt)</viewAtom>
+                <viewAtom>edition_view(code,type,date,edt,id,bk_id)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- edition_view(x1,x2,x3,x4,x5,x6) AND x4!=NULL -> edition_number(x1, x4) -->
+        <ontologyPredicateComplexMapping id="m_edition_number_1">
+            <attribute string="http://www.obdasystems.com/books/editionNumber">
+                <domainTemplate>http://www.obdasystems.com/books/edition-{code}</domainTemplate>
+                <rangeVariable>edt</rangeVariable>
+            </attribute>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(edt)</viewAtom>
+                <viewAtom>edition_view(code,type,date,edt,id,bk_id)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- editor_view(x, y) -> editor_name(x, y) -->
+        <ontologyPredicateComplexMapping id="m_editor_name_1">
+            <attribute string="http://www.obdasystems.com/books/name">
+                <domainTemplate>http://www.obdasystems.com/books/editor-{code}</domainTemplate>
+                <rangeVariable>name</rangeVariable>
+            </attribute>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(name)</viewAtom>
+                <viewAtom>editor_view(code,name)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- on_prob_view(x, y) AND x!=NULL -> emergingwriter_name(x, y) -->
+        <ontologyPredicateComplexMapping id="m_emergingwriter_name_1">
+            <attribute string="http://www.obdasystems.com/books/name">
+                <domainTemplate>http://www.obdasystems.com/books/author-{code}</domainTemplate>
+                <rangeVariable>name</rangeVariable>
+            </attribute>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(name)</viewAtom>
+                <viewAtom>on_prob_view(code,name)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- genre_view(x, y) AND y!=NULL -> genre(x, y) -->
+        <ontologyPredicateComplexMapping id="m_genre_1">
+            <attribute string="http://www.obdasystems.com/books/genre">
+                <domainTemplate>http://www.obdasystems.com/books/book-{book_code}</domainTemplate>
+                <rangeVariable>genre_name</rangeVariable>
+            </attribute>
+            <viewAtomsConjunction>
+                <viewAtom>IS_NOT_NULL(genre_name)</viewAtom>
+                <viewAtom>genre_view(book_code,genre_name)</viewAtom>
+            </viewAtomsConjunction>
+        </ontologyPredicateComplexMapping>
+        
+        <!-- edition_view(x1,x2,x3,x4,x5,x6) -> hasEdition(x6, x1) -->
+        <ontologyPredicateMapping id="m_hasEdition_1">
+            <role string="http://www.obdasystems.com/books/hasEdition">
+                <domainTemplate>http://www.obdasystems.com/books/book-{bk_id}</domainTemplate>
+                <rangeTemplate>http://www.obdasystems.com/books/edition-{code}</rangeTemplate>
+            </role>
+            <HEAD string="edition_view(code, type, date, edt, id, bk_id)"/>
+        </ontologyPredicateMapping>
+        
+        <!-- written_by_view(x, y) -> writtenBy(x, y) -->
+        <ontologyPredicateMapping id="m_writtenBy_1">
+            <role string="http://www.obdasystems.com/books/writtenBy">
+                <domainTemplate>http://www.obdasystems.com/books/book-{book_code}</domainTemplate>
+                <rangeTemplate>http://www.obdasystems.com/books/author-{writer_id}</rangeTemplate>
+            </role>
+            <HEAD string="written_by_view(book_code, writer_id)"/>
+        </ontologyPredicateMapping>
+        
+        
+        
+        <!-- ######################################## -->
+        <!-- # PRIMITIVE VIEWS USED IN THE MAPPINGS # -->
+        <!-- ######################################## -->
+        
+        <!-- AFFILIATED_WRITER_VIEW -->
+        <primitiveView>
+            <HEAD string="affiliated_writer_view(code, name)"/>
+            <SQLQuery>SELECT wr_code as code, wr_name as name
+                    FROM tb_affiliated_writers</SQLQuery>
+        </primitiveView>
+        
+        <!-- BOOK_VIEW -->
+        <primitiveView>
+            <HEAD string="book_view(code, title, type)"/>
+            <SQLQuery>SELECT bk_code as code, bk_title as title, bk_type as type
+                    FROM tb_books</SQLQuery>
+        </primitiveView>
+        
+        <!-- EDITION_VIEW -->
+        <primitiveView>
+            <HEAD string="edition_view(code, type, date, edt, id, bk_id)"/>
+            <SQLQuery>SELECT ed_code as code,
+                            ed_type as type,
+                            pub_date as date,
+                            n_edt as edt,
+                            editor as id,
+                            bk_id as bk_id
+                    FROM tb_edition</SQLQuery>
+        </primitiveView>
+        
+        <!-- EDITOR_VIEW -->
+        <primitiveView>
+            <HEAD string="editor_view(code, name)"/>
+            <SQLQuery>SELECT ed_code as code, ed_name as name
+                    FROM tb_editor</SQLQuery>
+        </primitiveView>
+        
+        <!-- GENRE_VIEW -->
+        <primitiveView>
+            <HEAD string="genre_view(book_code, genre_name)"/>
+            <SQLQuery>SELECT id_bk as book_code, gen_name as genre_name 
+                    FROM tb_bk_gen</SQLQuery>
+        </primitiveView>
+        
+        <!-- ON_PROB_VIEW -->
+        <primitiveView>
+            <HEAD string="on_prob_view(code, name)"/>
+            <SQLQuery>SELECT wr_code as code, wr_name as name 
+                    FROM books.tb_on_prob_wr</SQLQuery>
+        </primitiveView>
+        
+        <!-- UNEDITED_BOOK_VIEW -->
+        <primitiveView>
+            <HEAD string="unedited_book_view(code)"/>
+            <SQLQuery>SELECT bk_code as code
+                    FROM tb_books
+                    WHERE not exists (
+                        SELECT 1
+                            FROM tb_edition WHERE bk_id = bk_code
+                    )</SQLQuery>
+        </primitiveView>
+        
+        <!-- WRITTEN_BY_VIEW -->
+        <primitiveView>
+            <HEAD string="written_by_view(book_code, writer_id)"/>
+            <SQLQuery>SELECT bk_code as book_code, wr_id as writer_id
+                    FROM tb_authors</SQLQuery>
+        </primitiveView>
+    </mappings>
+    <blocks/>
+    
+    
+    
+    <!-- ######################################## -->
+    <!-- ############# CONSTRAINTS ############## -->
+    <!-- ######################################## -->
+    
+    <constraints>
+        <inclusion id="id_1585642456141">
+            <left arg="unedited_book_view[1]"/>
+            <right arg="book_view[1]"/>
+        </inclusion>
+        <key>
+            <projection arg="affiliated_writer_view[1]"/>
+        </key>
+        <key>
+            <projection arg="book_view[1]"/>
+        </key>
+        <key>
+            <projection arg="unedited_book_view[1]"/>
+        </key>
+    </constraints>
+</OBDA>
