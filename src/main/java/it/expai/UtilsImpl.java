@@ -127,7 +127,7 @@ public class UtilsImpl implements IUtils {
 			String localName = predicate.substring(predicate.indexOf("#"), predicate.indexOf(">"));
 			// System.out.println("localname: "+localName);
 
-			String terms = subject+','+object;
+			String terms = subject.replace(",", "")+','+object.replace(",", "");
 			String domain = terms.split(",")[0];
 			String range = terms.split(",")[1];
 

@@ -45,8 +45,10 @@ public class ExplainableAIOntop {
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
-        String propertyFile = "src/main/resources/example/books/exampleBooks.properties";
-        //String propertyFile = "src/main/resources/npd/npd.properties";
+        
+        //String propertyFile = "src/main/resources/example/books/exampleBooks.properties";
+        String propertyFile = "src/main/resources/npd/npd.properties";
+
         Properties p = new Properties();
         FileInputStream fis = new FileInputStream(propertyFile);
         p.load(fis);
@@ -209,7 +211,6 @@ public class ExplainableAIOntop {
 
 			switch (choice) {
 				case "n":
-					//mastro.exitQueryRunnerThread();
 					return;
 
 				case "y": {
@@ -230,8 +231,6 @@ public class ExplainableAIOntop {
 					System.out.println("\n\nSPARQL query (radius=" + radius + "): \n\n" + sparql_approximated_queries);
                     fileOut.println("\n\nSPARQL query (radius=" + radius + "): \n\n" + sparql_approximated_queries);
 					
-
-					//Characterization characterization;
 				}
 
 			}
