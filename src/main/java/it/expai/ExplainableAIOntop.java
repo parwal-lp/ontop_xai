@@ -168,8 +168,13 @@ public class ExplainableAIOntop {
 		List<String> minComp_sparql_disjuncts = new LinkedList<String>();
 		int disjunctsCount = 1;
 
-        System.out.println("\nTranslating disjuncts in SPARQL...");
+
+        // ===============================
+        // Translate Disjuncts into SPARQL
+        // ===============================
+        System.out.println("\n===============================\nTranslate Disjuncts into SPARQL\n===============================");
 		for (List<MembershipAssertion> dis : minComp_disjuncts) {
+            System.out.println("inizio a iterare le asserzioni del disgiunto " +disjunctsCount);
 			String sparqlDisjunct = ui.sparqlTranslate(dis, prefixList, pm);
 			minComp_sparql_disjuncts.add(sparqlDisjunct);
             fileOut.println("\nDISGIUNTO "+ disjunctsCount +" IN SPARQL:\n" + sparqlDisjunct);

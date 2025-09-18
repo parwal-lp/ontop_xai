@@ -239,11 +239,15 @@ public class UtilsImpl implements IUtils {
     public String sparqlTranslate(List<MembershipAssertion> facts, String prefixList, PrefixManager pm) {
         List<String> variables = new LinkedList<String>();
 
-		int max_x = 0;
+		int max_x = 0;		
+		System.out.println("sono " + facts.size() + " membership assertions");
+		int index = 0;
 		for(MembershipAssertion m : facts) {
+			System.out.println(index++);
 			if(m.getClass().equals(Concept.class)) {
 				String term = ((Concept)m).getConceptTerm();
 				if(term.substring(0,1).equals("x")) {
+					System.out.println("trovato una x in un term di un concetto");
 					max_x = Math.max(max_x, Integer.parseInt(term.substring(1)));
 				}	
 			}
@@ -251,12 +255,14 @@ public class UtilsImpl implements IUtils {
 				if(((Role)m).getDomainTerm().substring(0,1).equals("x")) {
 					String dom_term = ((Role)m).getDomainTerm();
 					if(dom_term.substring(0,1).equals("x")) {
+						System.out.println("trovato una x in un dominio di un ruolo");
 						max_x = Math.max(max_x, Integer.parseInt(dom_term.substring(1)));
 					}
 				}
 				if(((Role)m).getRangeTerm().substring(0,1).equals("x")) {
 					String ran_term = ((Role)m).getRangeTerm();
 					if(ran_term.substring(0,1).equals("x")) {
+						System.out.println("trovato una x in un range di un ruolo");
 						max_x = Math.max(max_x, Integer.parseInt(ran_term.substring(1)));
 					}
 				}
@@ -264,26 +270,31 @@ public class UtilsImpl implements IUtils {
 		}
 
 		//String x = "";
+		System.out.println("aggiungo x alle variabili (inizio for)");
 		for(int i=0; i<max_x; i++) {
 			String new_x = "x"+String.valueOf(i+1);
 			variables.add(new_x);
 			
 			//x += "?x"+String.valueOf(i+1)+" ";
 		}
+		System.out.println("finito calcolo variabili (fine for)");
 
 		//String hat = prefixList + "SELECT DISTINCT " + x + "\nWHERE { \n";
 		//String hat = "SELECT DISTINCT " + x + "\nWHERE { \n";
 		String hat = "{\n";
 		String body = "";
 		
+		System.out.println("inizio di nuovo a scorrere tutte le "+facts.size()+" membership assertions");
+		index = 0;
 		for(MembershipAssertion atom : facts) {	
-			
+			System.out.println(index++);
 			String prefix = pm.getShortForm(atom.getNamespace());
 			//System.out.println("prefix for "+atom.getNamespace()+" is "+prefix);
 			if(atom.getClass().equals(Concept.class)) {
 				body += "?"+((Concept)atom).getConceptTerm() + " a "+ prefix + atom.getLocalName()+". \n";
 				
 				if(!variables.contains(((Concept)atom).getConceptTerm())) {
+					System.out.println("nuova variabile per concetto");
 					variables.add(((Concept)atom).getConceptTerm());
 				}
 				
@@ -292,9 +303,11 @@ public class UtilsImpl implements IUtils {
 				body += "?"+((Role)atom).getDomainTerm()+" "+ prefix + atom.getLocalName()+" ?"+((Role)atom).getRangeTerm()+". \n";
 				
 				if(!variables.contains(((Role)atom).getDomainTerm())) {
+					System.out.println("nuova variabile per dominio");
 					variables.add(((Role)atom).getDomainTerm());
 				}
 				if(!variables.contains(((Role)atom).getRangeTerm())) {
+					System.out.println("nuova variabile per ruolo");
 					variables.add(((Role)atom).getRangeTerm());
 				}
 			}
@@ -302,6 +315,7 @@ public class UtilsImpl implements IUtils {
 		
 		//String q = hat+body+"} \n";
 		String q = hat+body;
+		System.out.println("fine calcolo query SPARQL");
 
 		return q.substring(0, q.length()-2)+"\n}";
     }
