@@ -30,8 +30,9 @@ public interface IUtils {
 	 * @param membershipAssertions set of membership assertions containing constants
 	 * @return dictionary with mapping from each constant to the corresponding existential variable 
      * @throws FileNotFoundException 
+     * @throws IOException 
 	 */
-	HashMap<String, Integer> existentialVarsMapping(File membershipAssertions) throws FileNotFoundException;
+	HashMap<String, Integer> existentialVarsMapping(File membershipAssertions) throws FileNotFoundException, IOException;
 
 
     /**
@@ -45,8 +46,9 @@ public interface IUtils {
 	 * @return The disjunct whose size is the same of the chase but with xs and ys
 	 *         substituted to the original values
      * @throws FileNotFoundException 
+     * @throws IOException 
 	 */
-	List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws FileNotFoundException;
+	List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws FileNotFoundException, IOException;
 
 
     /**

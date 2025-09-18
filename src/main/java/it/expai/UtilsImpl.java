@@ -1,5 +1,6 @@
 package it.expai;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.opencsv.CSVReader;
@@ -23,6 +25,10 @@ import com.opencsv.exceptions.CsvValidationException;
 import it.unibz.inf.ontop.spec.mapping.PrefixManager;
 
 public class UtilsImpl implements IUtils {
+
+	private static final Pattern TRIPLE_PATTERN = Pattern.compile(
+		"(<[^>]+>)\\s+(<[^>]+>)\\s+(\"[^\"]+\"|<[^>]+>|\"[^>]+>)\\s*\\."
+	);
 
     @Override
     public List<List<String>> getLambda(String path) throws FileNotFoundException, IOException, CsvValidationException {
@@ -47,15 +53,21 @@ public class UtilsImpl implements IUtils {
     }
 
 	@Override
-	public HashMap<String, Integer> existentialVarsMapping(File abox) throws FileNotFoundException{		
+	public HashMap<String, Integer> existentialVarsMapping(File abox) throws IOException{		
 		HashMap<String, Integer> res = new HashMap<String, Integer>();
 		int y_counter = 1;
 
 
-		Scanner myReader = new Scanner(abox, "UTF-8");
-		while (myReader.hasNextLine()) {
+		//Scanner myReader = new Scanner(abox, "UTF-8");
+		FileReader fr = new FileReader(abox);
+        BufferedReader br = new BufferedReader(fr);
+		String row;
+		
 
-			String row = myReader.nextLine();
+		while ((row = br.readLine()) != null) {
+		//while (myReader.hasNextLine()) {
+
+			//String row = myReader.nextLine();
 			MembershipAssertion assertion = assertionFromTriple(row);
 			//System.out.println(assertion);
 
@@ -80,7 +92,7 @@ public class UtilsImpl implements IUtils {
 			}
 		}
 
-		myReader.close();
+		//myReader.close();
 
 		return res;
 	}
@@ -90,9 +102,9 @@ public class UtilsImpl implements IUtils {
     public MembershipAssertion assertionFromTriple(String row) {
 		String subject ="", predicate="", object="";
 			
-		String regex = "(<[^>]+>)\\s+(<[^>]+>)\\s+(\"[^\"]+\"|<[^>]+>|\"[^>]+>)\\s*\\.";
-		java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
-		java.util.regex.Matcher matcher = pattern.matcher(row);
+		//String regex = "(<[^>]+>)\\s+(<[^>]+>)\\s+(\"[^\"]+\"|<[^>]+>|\"[^>]+>)\\s*\\.";
+		//java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+		java.util.regex.Matcher matcher = TRIPLE_PATTERN.matcher(row);
 
 		if (matcher.find()) {
 			subject = matcher.group(1);
@@ -112,68 +124,120 @@ public class UtilsImpl implements IUtils {
 
 		if(predicate.endsWith("#type>")){ // è un concetto
 			//concept like
-			String namespace = object.substring(object.indexOf("<")+1, object.indexOf("#"));
+			int hashIndex = object.indexOf('#');
+			String namespace = object.substring(1, hashIndex);
+			String localName = object.substring(hashIndex, object.length() - 1);
+			String term = subject.substring(1, subject.length() - 1);
+			return new Concept(namespace, localName, term);
+			//String namespace = object.substring(object.indexOf("<")+1, object.indexOf("#"));
 			// System.out.println("namespace: "+namespace);
-			String localName = object.substring(object.indexOf("#"), object.indexOf(">"));
+			//String localName = object.substring(object.indexOf("#"), object.indexOf(">"));
 			// System.out.println("localname: "+localName);
 
-			String terms = subject.substring(subject.indexOf("<")+1, subject.indexOf(">"));
-			assertion = new Concept(namespace, localName, terms);
+			//String terms = subject.substring(subject.indexOf("<")+1, subject.indexOf(">"));
+			//assertion = new Concept(namespace, localName, terms);
 
 			// System.out.println("terms "+terms);
 		}
 		else { // è un ruolo
 			//role like
-			String namespace = predicate.substring(predicate.indexOf("<")+1, predicate.indexOf("#"));
-			// System.out.println("namespace: "+namespace);
-			String localName = predicate.substring(predicate.indexOf("#"), predicate.indexOf(">"));
-			// System.out.println("localname: "+localName);
+			int hashIndex = predicate.indexOf('#');
+			String namespace = predicate.substring(1, hashIndex);
+			String localName = predicate.substring(hashIndex, predicate.length() - 1);
 
-			String terms = subject.replace(",", "")+','+object.replace(",", "");
-			String domain = terms.split(",")[0];
-			String range = terms.split(",")[1];
+			String[] terms = new String[2];
+			String subj = subject.replace(",", "");
+			String obj = object.replace(",", "");
+			terms[0] = subj;
+			terms[1] = obj;
 
-			//il range può essere un literal oppure un IRI
-			if(range.contains("\"")){ //se è un literal tengo solo il suo valore
-				range = range.substring(range.indexOf("\"") + 1, range.indexOf("\"", range.indexOf("\"")+1));
+			// se range è literal, prendi solo il valore
+			if (terms[1].contains("\"")) {
+				int firstQuote = terms[1].indexOf('"');
+				int secondQuote = terms[1].indexOf('"', firstQuote + 1);
+				terms[1] = terms[1].substring(firstQuote + 1, secondQuote);
 			}
 
-			assertion = new Role(namespace, localName, domain, range);
+			return new Role(namespace, localName, terms[0], terms[1]);
+
+			// String namespace = predicate.substring(predicate.indexOf("<")+1, predicate.indexOf("#"));
+			// System.out.println("namespace: "+namespace);
+			// String localName = predicate.substring(predicate.indexOf("#"), predicate.indexOf(">"));
+			// System.out.println("localname: "+localName);
+
+			// String terms = subject.replace(",", "")+','+object.replace(",", "");
+			// String domain = terms.split(",")[0];
+			// String range = terms.split(",")[1];
+
+			//il range può essere un literal oppure un IRI
+			// if(range.contains("\"")){ //se è un literal tengo solo il suo valore
+			// 	range = range.substring(range.indexOf("\"") + 1, range.indexOf("\"", range.indexOf("\"")+1));
+			// }
+
+			//assertion = new Role(namespace, localName, domain, range);
 			
 			// System.out.println("domain: "+domain);
 			// System.out.println("range: "+range);
 		}
 
-		return assertion;
+		//return assertion;
 	}
 
 	@Override
-    public List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws FileNotFoundException {
+    public List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws IOException {
         List<MembershipAssertion> query = new LinkedList<MembershipAssertion>();
 		Map<String, Integer> dictionary = new HashMap<String, Integer>();	
 		int x_counter = 1, y_counter = 1;
+		long start, end;
 		
 		for(String t : tuple) 
 			dictionary.put(t, x_counter++);
 
 		//System.out.println("\nTUPLA CORRENTE:");
 		//System.out.println(tuple);
+
+		Set<String> tupleSet = new HashSet<String>(tuple);
+
+		start = System.nanoTime();
+
+		FileReader fr = new FileReader(abox);
+        BufferedReader br = new BufferedReader(fr);
+		String row;
 		
-		Scanner myReader = new Scanner(abox, "UTF-8");
-		while (myReader.hasNextLine()) {
-			String row = myReader.nextLine();
+
+		// Scanner myReader = new Scanner(abox, "UTF-8");
+		// int lines = 0;
+		// System.out.println("inizio a leggere abox");
+		// while ((row = br.readLine()) != null) {
+		// // while (myReader.hasNextLine()) {
+		//  	lines++;
+		//  }
+		// end = System.nanoTime();
+		// System.out.println("Il file abox ha " + lines + " righe (" + (end-start)/ 1_000_000_000.0 + " seconds to read it all)");
+
+		
+		// Scanner myReader = new Scanner(abox, "UTF-8");
+		// while (myReader.hasNextLine()) {
+		while ((row = br.readLine()) != null) {
+			// row = myReader.nextLine();
+			
 			MembershipAssertion assertion = assertionFromTriple(row);
+			
+			
 			//System.out.println("\nORA GUARDO L'ASSERZIONE "+assertion);
-			if(assertion.getClass().equals(Concept.class)) {
+			//if(assertion.getClass().equals(Concept.class)) {
+			
+			
+			if(assertion instanceof Concept) {
 				Concept mac = (Concept)assertion;
 				String term = mac.getConceptTerm();
 				MembershipAssertion temp;
 				
-				if(tuple.contains(term)) {
+				if(tupleSet.contains(term)) {
 					//it's an 'x'
 					//yet present in dictionary
 					//take value and transform in an 'x'
-					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "x"+String.valueOf(dictionary.get(term)));
+					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "x"+dictionary.get(term));
 				}	
 				else {
 					//it's a 'y'
@@ -182,25 +246,23 @@ public class UtilsImpl implements IUtils {
 					//	dictionary.put(term, y_counter++);
 					//}		
 					//temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+String.valueOf(dictionary.get(term)));
-					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+String.valueOf(existentialVars.get(term)));
+					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+existentialVars.get(term));
 				}
 				query.add(temp);
 			}
 			
-			
-			if(assertion.getClass().equals(Role.class)) {
+			else if(assertion instanceof Role) {
 				Role mar = (Role)assertion;
 				String term_domain = mar.getDomainTerm();
 				String term_range = mar.getRangeTerm();
-				MembershipAssertion temp;
 				
 				String new_dom_term = "";
 				String new_ran_term = "";
 				
 				//analize domain term
 				//domain term is an 'x'
-				if(tuple.contains(term_domain)) {
-					new_dom_term = "x"+String.valueOf(dictionary.get(term_domain));
+				if(tupleSet.contains(term_domain)) {
+					new_dom_term = "x"+dictionary.get(term_domain);
 				}
 				//term is a 'y'
 				else {
@@ -209,13 +271,13 @@ public class UtilsImpl implements IUtils {
 						dictionary.put(term_domain, y_counter++);
 					}
 					//new_dom_term = "y"+String.valueOf(dictionary.get(term_domain));
-					new_dom_term = "y"+String.valueOf(existentialVars.get(term_domain));
+					new_dom_term = "y"+existentialVars.get(term_domain);
 				}
 
 				//analize range term
 				//range term is an 'x'
-				if(tuple.contains(term_range)) {
-					new_ran_term = "x"+String.valueOf(dictionary.get(term_range));
+				if(tupleSet.contains(term_range)) {
+					new_ran_term = "x"+dictionary.get(term_range);
 				}
 				//range term is a 'y'
 				else {
@@ -224,14 +286,17 @@ public class UtilsImpl implements IUtils {
 						dictionary.put(term_range, y_counter++);
 					}
 					//new_ran_term = "y"+String.valueOf(dictionary.get(term_range));
-					new_ran_term = "y"+String.valueOf(existentialVars.get(term_range));
+					new_ran_term = "y"+existentialVars.get(term_range);
 				}
 				
-				temp = new Role(mar.getNamespace(), mar.getLocalName(), new_dom_term, new_ran_term);
+				MembershipAssertion temp = new Role(mar.getNamespace(), mar.getLocalName(), new_dom_term, new_ran_term);
 				query.add(temp);
 			}
+
 		}
-		myReader.close();
+		end = System.nanoTime();
+		//System.out.println((end-start)/ 1_000_000_000.0 + " secondi per completare while");
+		// myReader.close();
 	
 		return query;
     }
@@ -243,7 +308,7 @@ public class UtilsImpl implements IUtils {
 		Set<String> variables = new HashSet<>();
 
 		int max_x = 0;		
-		System.out.println("sono " + facts.size() + " membership assertions");
+		//System.out.println("sono " + facts.size() + " membership assertions");
 		int index = 0;
 		for(MembershipAssertion m : facts) {
 			//System.out.println(index++);
@@ -273,14 +338,14 @@ public class UtilsImpl implements IUtils {
 		}
 
 		//String x = "";
-		System.out.println("aggiungo x alle variabili (inizio for)");
+		//System.out.println("aggiungo x alle variabili (inizio for)");
 		for(int i=0; i<max_x; i++) {
 			String new_x = "x"+String.valueOf(i+1);
 			variables.add(new_x);
 			
 			//x += "?x"+String.valueOf(i+1)+" ";
 		}
-		System.out.println("finito calcolo variabili (fine for), sono: "+variables.size());
+		//System.out.println("finito calcolo variabili (fine for), sono: "+variables.size());
 
 		//String hat = prefixList + "SELECT DISTINCT " + x + "\nWHERE { \n";
 		//String hat = "SELECT DISTINCT " + x + "\nWHERE { \n";
@@ -289,7 +354,7 @@ public class UtilsImpl implements IUtils {
 		StringBuilder sb = new StringBuilder();
 		sb.append(hat);
 		
-		System.out.println("inizio di nuovo a scorrere tutte le "+facts.size()+" membership assertions");
+		//System.out.println("inizio di nuovo a scorrere tutte le "+facts.size()+" membership assertions");
 		index = 0;
 		long lastPrintTime = System.currentTimeMillis(); // time of last print
 		long interval = 10_000;
@@ -348,7 +413,6 @@ public class UtilsImpl implements IUtils {
 		//String q = hat+body+"} \n";
 		sb.append("}");
 		//String q = hat+body;
-		System.out.println("fine calcolo query SPARQL");
 		return sb.toString();
 		//return q.substring(0, q.length()-2)+"\n}";
     }

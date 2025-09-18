@@ -123,9 +123,9 @@ public class ExplainableAIOntop {
         // =========================
         List<List<String>> lambda = ui.getLambda(lambdaFile);
 		System.out.println("\n===============\nRetrieve Lambda\n===============");
-		for (List<String> tuple : lambda) {
-			System.out.println(tuple);
-		}
+		// for (List<String> tuple : lambda) {
+		// 	System.out.println(tuple);
+		// }
         System.out.println("Lambda size: " + lambda.size());
 
 
@@ -136,18 +136,22 @@ public class ExplainableAIOntop {
         System.out.println("\n==================\nGenerate Disjuncts\n==================");
         List<List<MembershipAssertion>> cqs = new LinkedList<List<MembershipAssertion>>();
         System.out.println("Computing existential variables...");
+        long start = System.nanoTime();
 		HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
-        System.out.println("Computed " + existentialVars.size() + " existential variables.");
+        long end = System.nanoTime();
+        System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + "seconds");
         //System.out.println(existentialVars);
         
         //fileOut.println("\nEXISTENTIAL VARIABLES -------------------------\n" + existentialVars);
 
-        System.out.println("\nGenerating disjuncts...");
+        System.out.println("\nGenerating disjuncts... (" + lambda.size() +")");
 		for (List<String> tuple : lambda) {
+            start = System.nanoTime();
 			List<MembershipAssertion> temp = ui.generateDisjunct(tuple, abox, existentialVars);
-            fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
-            fileOut.println(temp);
-            System.out.println("\nDisjunct (CQ) for tuple " + tuple + " completed and printed to file.");
+            end = System.nanoTime();
+            //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
+            //fileOut.println(temp);
+            System.out.println("Disjunct (CQ) for tuple " + tuple + " completed in " + (end - start) / 1_000_000_000.0 + "seconds");
 			cqs.add(temp);
 		}
         System.out.println("\nAll CQs computed. Total number of CQs: " + cqs.size());
@@ -174,11 +178,13 @@ public class ExplainableAIOntop {
         // ===============================
         System.out.println("\n===============================\nTranslate Disjuncts into SPARQL\n===============================");
 		for (List<MembershipAssertion> dis : minComp_disjuncts) {
-            System.out.println("inizio a iterare le asserzioni del disgiunto " +disjunctsCount);
+            //System.out.println("inizio a iterare le asserzioni del disgiunto " +disjunctsCount);
+            start = System.nanoTime();
 			String sparqlDisjunct = ui.sparqlTranslate(dis, prefixList, pm);
 			minComp_sparql_disjuncts.add(sparqlDisjunct);
-            fileOut.println("\nDISGIUNTO "+ disjunctsCount +" IN SPARQL:\n" + sparqlDisjunct);
-			System.out.println("Disjunct "+ (disjunctsCount) + " translated in SPARQL and printed to file.");
+            end = System.nanoTime();
+            //fileOut.println("\nDISGIUNTO "+ disjunctsCount +" IN SPARQL:\n" + sparqlDisjunct);
+			System.out.println("Disjunct "+ (disjunctsCount) + " translated in SPARQL in " + (end - start) / 1_000_000_000.0 + "seconds");
             disjunctsCount++;
             
 		}
