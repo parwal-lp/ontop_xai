@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -237,17 +239,18 @@ public class UtilsImpl implements IUtils {
 
     @Override
     public String sparqlTranslate(List<MembershipAssertion> facts, String prefixList, PrefixManager pm) {
-        List<String> variables = new LinkedList<String>();
+        //List<String> variables = new LinkedList<String>();
+		Set<String> variables = new HashSet<>();
 
 		int max_x = 0;		
 		System.out.println("sono " + facts.size() + " membership assertions");
 		int index = 0;
 		for(MembershipAssertion m : facts) {
-			System.out.println(index++);
+			//System.out.println(index++);
 			if(m.getClass().equals(Concept.class)) {
 				String term = ((Concept)m).getConceptTerm();
 				if(term.substring(0,1).equals("x")) {
-					System.out.println("trovato una x in un term di un concetto");
+					//System.out.println("trovato una x in un term di un concetto");
 					max_x = Math.max(max_x, Integer.parseInt(term.substring(1)));
 				}	
 			}
@@ -255,14 +258,14 @@ public class UtilsImpl implements IUtils {
 				if(((Role)m).getDomainTerm().substring(0,1).equals("x")) {
 					String dom_term = ((Role)m).getDomainTerm();
 					if(dom_term.substring(0,1).equals("x")) {
-						System.out.println("trovato una x in un dominio di un ruolo");
+						//System.out.println("trovato una x in un dominio di un ruolo");
 						max_x = Math.max(max_x, Integer.parseInt(dom_term.substring(1)));
 					}
 				}
 				if(((Role)m).getRangeTerm().substring(0,1).equals("x")) {
 					String ran_term = ((Role)m).getRangeTerm();
 					if(ran_term.substring(0,1).equals("x")) {
-						System.out.println("trovato una x in un range di un ruolo");
+						//System.out.println("trovato una x in un range di un ruolo");
 						max_x = Math.max(max_x, Integer.parseInt(ran_term.substring(1)));
 					}
 				}
@@ -277,47 +280,77 @@ public class UtilsImpl implements IUtils {
 			
 			//x += "?x"+String.valueOf(i+1)+" ";
 		}
-		System.out.println("finito calcolo variabili (fine for)");
+		System.out.println("finito calcolo variabili (fine for), sono: "+variables.size());
 
 		//String hat = prefixList + "SELECT DISTINCT " + x + "\nWHERE { \n";
 		//String hat = "SELECT DISTINCT " + x + "\nWHERE { \n";
 		String hat = "{\n";
-		String body = "";
+		//String body = "";
+		StringBuilder sb = new StringBuilder();
+		sb.append(hat);
 		
 		System.out.println("inizio di nuovo a scorrere tutte le "+facts.size()+" membership assertions");
 		index = 0;
+		long lastPrintTime = System.currentTimeMillis(); // time of last print
+		long interval = 10_000;
 		for(MembershipAssertion atom : facts) {	
-			System.out.println(index++);
+			long now = System.currentTimeMillis();
+			if (now - lastPrintTime >= interval) {
+				lastPrintTime = now; // reset last print time
+				//print info
+				SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");    
+				Date date = new Date(now);
+				String pretty_now = sdf.format(date);
+				System.out.println(pretty_now + ": iterazione "+ index +" di " + facts.size());
+				
+			}
+			index++;
+			
 			String prefix = pm.getShortForm(atom.getNamespace());
 			//System.out.println("prefix for "+atom.getNamespace()+" is "+prefix);
-			if(atom.getClass().equals(Concept.class)) {
-				body += "?"+((Concept)atom).getConceptTerm() + " a "+ prefix + atom.getLocalName()+". \n";
-				
-				if(!variables.contains(((Concept)atom).getConceptTerm())) {
-					System.out.println("nuova variabile per concetto");
-					variables.add(((Concept)atom).getConceptTerm());
-				}
+			//if(atom.getClass().equals(Concept.class)) {
+			if(atom instanceof Concept) {
+				Concept c = (Concept) atom;
+				String term = c.getConceptTerm();
+				sb.append("?").append(term)
+						.append(" a ").append(prefix).append(c.getLocalName())
+						.append(".\n");
+				//body += "?"+((Concept)atom).getConceptTerm() + " a "+ prefix + atom.getLocalName()+". \n";
+				//if(!variables.contains(((Concept)atom).getConceptTerm())) {
+					//System.out.println("nuova variabile per concetto");
+				variables.add(term);
+				//}
 				
 			}
 			else {
-				body += "?"+((Role)atom).getDomainTerm()+" "+ prefix + atom.getLocalName()+" ?"+((Role)atom).getRangeTerm()+". \n";
-				
-				if(!variables.contains(((Role)atom).getDomainTerm())) {
-					System.out.println("nuova variabile per dominio");
-					variables.add(((Role)atom).getDomainTerm());
-				}
-				if(!variables.contains(((Role)atom).getRangeTerm())) {
-					System.out.println("nuova variabile per ruolo");
-					variables.add(((Role)atom).getRangeTerm());
-				}
+				Role r = (Role) atom;
+				String domain = r.getDomainTerm();
+				String range = r.getRangeTerm();
+				sb.append("?").append(domain)
+						.append(" ").append(prefix).append(r.getLocalName())
+						.append(" ?").append(range)
+						.append(".\n");
+				variables.add(domain);
+				variables.add(range);
+				//body += "?"+((Role)atom).getDomainTerm()+" "+ prefix + atom.getLocalName()+" ?"+((Role)atom).getRangeTerm()+". \n";
+				//if(!variables.contains(((Role)atom).getDomainTerm())) {
+					//System.out.println("nuova variabile per dominio");
+				variables.add(domain);
+				//}
+				//if(!variables.contains(((Role)atom).getRangeTerm())) {
+					//System.out.println("nuova variabile per ruolo");
+				variables.add(range);
+				//}
 			}
+			//System.out.println("ora le variabili sono "+variables.size());
 		}
 		
 		//String q = hat+body+"} \n";
-		String q = hat+body;
+		sb.append("}");
+		//String q = hat+body;
 		System.out.println("fine calcolo query SPARQL");
-
-		return q.substring(0, q.length()-2)+"\n}";
+		return sb.toString();
+		//return q.substring(0, q.length()-2)+"\n}";
     }
 
 
