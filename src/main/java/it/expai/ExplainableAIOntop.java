@@ -126,7 +126,8 @@ public class ExplainableAIOntop {
 		// for (List<String> tuple : lambda) {
 		// 	System.out.println(tuple);
 		// }
-        System.out.println("Lambda size: " + lambda.size());
+        int lambdaSize = lambda.size();
+        System.out.println("Lambda size: " + lambdaSize);
 
 
 
@@ -144,14 +145,17 @@ public class ExplainableAIOntop {
         
         //fileOut.println("\nEXISTENTIAL VARIABLES -------------------------\n" + existentialVars);
 
-        System.out.println("\nGenerating disjuncts... (" + lambda.size() +")");
+        int count = 0;
+        System.out.println("\nGenerating disjuncts... (" + lambdaSize +")");
 		for (List<String> tuple : lambda) {
+            count++;
             start = System.nanoTime();
 			List<MembershipAssertion> temp = ui.generateDisjunct(tuple, abox, existentialVars);
             end = System.nanoTime();
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
-            System.out.println("Disjunct (CQ) for tuple " + tuple + " completed in " + (end - start) / 1_000_000_000.0 + "seconds");
+            System.out.println("\nDisjunct ["+count +"/"+lambdaSize+"] (CQ) for tuple " + tuple + " completed");
+            System.out.println("Computation time: " + (end - start) / 1_000_000_000.0 + "seconds");
             long heapFreeSize = Runtime.getRuntime().freeMemory();  // Free heap size
             System.out.println("Free Heap Size: " + (heapFreeSize / (1024 * 1024)) + " MB");
 			cqs.add(temp);
