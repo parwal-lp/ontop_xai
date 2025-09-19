@@ -152,6 +152,8 @@ public class ExplainableAIOntop {
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
             System.out.println("Disjunct (CQ) for tuple " + tuple + " completed in " + (end - start) / 1_000_000_000.0 + "seconds");
+            long heapFreeSize = Runtime.getRuntime().freeMemory();  // Free heap size
+            System.out.println("Free Heap Size: " + (heapFreeSize / (1024 * 1024)) + " MB");
 			cqs.add(temp);
 		}
         System.out.println("\nAll CQs computed. Total number of CQs: " + cqs.size());
