@@ -87,4 +87,23 @@ public interface IUtils {
 	 */
 	StringBuilder generateSparqlUCQ(Integer n, String prefix_list, List<String> sparqlDisjunctsBodies);
 
+
+	/**
+	 * Generates the border with radius 0 of a given tuple from lambda
+	 * @param tuple tuple from lambda
+	 * @param abox abox file materialization
+	 * @return the border with radius 0 of the given tuple
+	 * @throws IOException 
+	 */
+	List<MembershipAssertion> generateBorder0(List<String> tuple, File abox) throws IOException;
+
+
+	/**
+	 * Generates the CQ disjunct with variables stating from the border with constants
+	 * @param tuple tuple from lambda
+	 * @param border border with constants
+	 * @return the CQ disjunct with variables corresponding to the given border
+	 * @throws IOException
+	 */
+	List<MembershipAssertion> replaceConstVar(List<String> tuple, List<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException;
 }

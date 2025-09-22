@@ -14,10 +14,10 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
@@ -120,7 +120,6 @@ public class UtilsImpl implements IUtils {
 		// System.out.println("predicate: "+predicate);
 		// System.out.println("object: "+object);
 
-		MembershipAssertion assertion;
 
 		if(predicate.endsWith("#type>")){ // è un concetto
 			//concept like
@@ -183,6 +182,131 @@ public class UtilsImpl implements IUtils {
 		//return assertion;
 	}
 
+	@Override
+    public List<MembershipAssertion> generateBorder0(List<String> tuple, File abox) throws IOException {
+        List<MembershipAssertion> disjunct = new LinkedList<MembershipAssertion>();
+
+		Set<String> tupleSet = new HashSet<String>(tuple);
+
+		FileReader fr = new FileReader(abox);
+        BufferedReader br = new BufferedReader(fr);
+		String row;
+		
+		while ((row = br.readLine()) != null) {
+			
+			MembershipAssertion assertion = assertionFromTriple(row);
+			
+			if(assertion instanceof Concept) {
+				Concept mac = (Concept)assertion;
+				String term = mac.getConceptTerm();
+				MembershipAssertion temp;
+				
+				if(tupleSet.contains(term)) {
+					temp = new Concept(mac.getNamespace(), mac.getLocalName(), term);
+					disjunct.add(temp);
+				}
+			}
+			else if(assertion instanceof Role) {
+				Role mar = (Role)assertion;
+				String term_domain = mar.getDomainTerm();
+				String term_range = mar.getRangeTerm();
+			
+				MembershipAssertion temp;
+				
+				if(tupleSet.contains(term_domain) || tupleSet.contains(term_range)) {
+					temp = new Role(mar.getNamespace(), mar.getLocalName(), term_domain, term_range);
+					disjunct.add(temp);
+				}
+			}
+
+		}
+	
+		return disjunct;
+    }
+
+	@Override
+	public List<MembershipAssertion> replaceConstVar(List<String> tuple, List<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException{
+		List<MembershipAssertion> query = new LinkedList<MembershipAssertion>();
+		Map<String, Integer> dictionary = new HashMap<String, Integer>();
+		int x_counter = 1, y_counter = 1;
+
+		for(String t : tuple) 
+			dictionary.put(t, x_counter++);
+
+
+		Set<String> tupleSet = new HashSet<String>(tuple);
+
+		for (MembershipAssertion assertion : border){
+			if(assertion instanceof Concept) {
+				Concept mac = (Concept)assertion;
+				String term = mac.getConceptTerm();
+				MembershipAssertion temp;
+				
+				if(tupleSet.contains(term)) {
+					//it's an 'x'
+					//yet present in dictionary
+					//take value and transform in an 'x'
+					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "x"+dictionary.get(term));
+				}	
+				else {
+					//it's a 'y'
+					//if not seen before, put it in dictionary and increment y counter, otherwise, take its value
+					//if(!dictionary.containsKey(term)) {
+					//	dictionary.put(term, y_counter++);
+					//}		
+					//temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+String.valueOf(dictionary.get(term)));
+					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+existentialVars.get(term));
+				}
+				query.add(temp);
+			}
+			
+			else if(assertion instanceof Role) {
+				Role mar = (Role)assertion;
+				String term_domain = mar.getDomainTerm();
+				String term_range = mar.getRangeTerm();
+				
+				String new_dom_term = "";
+				String new_ran_term = "";
+				
+				//analize domain term
+				//domain term is an 'x'
+				if(tupleSet.contains(term_domain)) {
+					new_dom_term = "x"+dictionary.get(term_domain);
+				}
+				//term is a 'y'
+				else {
+					//add it if not present
+					if(!dictionary.containsKey(term_domain)) {
+						dictionary.put(term_domain, y_counter++);
+					}
+					//new_dom_term = "y"+String.valueOf(dictionary.get(term_domain));
+					new_dom_term = "y"+existentialVars.get(term_domain);
+				}
+
+				//analize range term
+				//range term is an 'x'
+				if(tupleSet.contains(term_range)) {
+					new_ran_term = "x"+dictionary.get(term_range);
+				}
+				//range term is a 'y'
+				else {
+					//add if not present
+					if(!dictionary.containsKey(term_range)) {
+						dictionary.put(term_range, y_counter++);
+					}
+					//new_ran_term = "y"+String.valueOf(dictionary.get(term_range));
+					new_ran_term = "y"+existentialVars.get(term_range);
+				}
+				
+				MembershipAssertion temp = new Role(mar.getNamespace(), mar.getLocalName(), new_dom_term, new_ran_term);
+				query.add(temp);
+			}
+		}
+		return query;
+	}
+
+
+	//old method, substituted by generateBorder (this one computes the minimally complete disjunct)
 	@Override
     public List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws IOException {
         List<MembershipAssertion> query = new LinkedList<MembershipAssertion>();
