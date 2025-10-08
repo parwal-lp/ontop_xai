@@ -33,6 +33,7 @@ public class ExplainableAIOntop {
     static String lambdaFile;
     static String aboxFile;
     static String logFile;
+    static String explFile;
 
     static int radius = 1;
 
@@ -55,10 +56,11 @@ public class ExplainableAIOntop {
         lambdaFile = p.getProperty("lambdaFile");
         aboxFile = p.getProperty("aboxFile");
         logFile = p.getProperty("logFile");
+        explFile = p.getProperty("explFile");
 
         fis.close();
 
-        PrintStream fileOut = new PrintStream(new FileOutputStream(logFile));
+        PrintStream fileOut = new PrintStream(new FileOutputStream(explFile));
         long start, end;
         float seconds;
 
@@ -195,7 +197,7 @@ public class ExplainableAIOntop {
         fileOut.println("\n}");
 
         long endExpl = System.nanoTime();
-        System.out.println("\nExplanation computed and printed to file. [" + (endExpl - startExpl) / 1_000_000_000.0 + " seconds]");
+        System.out.println("\nExplanation computed and printed to file ("+explFile+"). [" + ((endExpl - startExpl) / 1_000_000_000.0 / 60.0) + " minutes]");
 
 
         // ===================
