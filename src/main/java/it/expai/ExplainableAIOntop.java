@@ -47,8 +47,8 @@ public class ExplainableAIOntop {
         String propertyFile = "src/main/resources/npd/npd.properties";
 
         Properties p = new Properties();
-        FileInputStream fis = new FileInputStream(propertyFile);
-        p.load(fis);
+        FileInputStream propertyFileStream = new FileInputStream(propertyFile);
+        p.load(propertyFileStream);
 
         owlFile = p.getProperty("owlFile");
         obdaFile = p.getProperty("obdaFile");
@@ -57,7 +57,7 @@ public class ExplainableAIOntop {
         logFile = p.getProperty("logFile");
         explFile = p.getProperty("explFile");
 
-        fis.close();
+        propertyFileStream.close();
 
         PrintStream fileOut = new PrintStream(new FileOutputStream(explFile));
         PrintStream logOut = new PrintStream(new FileOutputStream(logFile));
@@ -85,8 +85,6 @@ public class ExplainableAIOntop {
         String prefixList = ui.getPrefix(pm);
 
 
-
-if (true) {
         //==================
         // Retrieve the ABox
         //==================
@@ -98,7 +96,7 @@ if (true) {
 		File abox = Paths.get(aboxFile).toFile();
 		if (abox.exists()) {
             System.out.println("File " + abox.getAbsolutePath() + " already exists!\n(the system will use the existing file, skipping the ABox materialization step)");
-            
+
             // System.out.println("\nLoading existing ABox from file...");
 			// membershipAssertions = ui.loadABoxFromFile(aboxFile, membershipAssertions, pm);
 			
@@ -137,13 +135,11 @@ if (true) {
         // Compute Variables
         // =================
         System.out.println("\n=================\nCompute Variables\n=================");
-        // List<List<MembershipAssertion>> cqs = new LinkedList<List<MembershipAssertion>>();
         System.out.println("Computing existential variables...");
         start = System.nanoTime();
 		HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
         end = System.nanoTime();
         System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
-        // System.out.println(existentialVars);
 
 
         // ==================
@@ -151,7 +147,6 @@ if (true) {
         // ==================
         System.out.println("\n==================\nCompute Exlanation\n==================");
         int count = 0;
-        //System.out.println("\nGenerating disjuncts... (" + lambdaSize +")");
 		
         
         StringBuilder head = new StringBuilder("SELECT ");
@@ -177,9 +172,6 @@ if (true) {
             //fileOut.println(temp);
             System.out.println("Border computed in " + (end - start) / 1_000_000_000.0 + " seconds");
 
-            //long heapFreeSize = Runtime.getRuntime().freeMemory();  // Free heap size
-            //System.out.println("Free Heap Size: " + (heapFreeSize / (1024 * 1024)) + " MB");
-			// cqs.add(temp);
 
 
             start = System.nanoTime();
@@ -203,7 +195,6 @@ if (true) {
 
         long endExpl = System.nanoTime();
         System.out.println("\nExplanation computed and printed to file ("+explFile+"). [" + ((endExpl - startExpl) / 1_000_000_000.0 / 60.0) + " minutes]");
-}
 
 
         // =======================
@@ -212,80 +203,13 @@ if (true) {
         // System.out.println("\n=======================\nCompute Certain Answers\n=======================");
 
         // String sparqlQuery = Files.readString(Paths.get("src/main/resources/npd/query.txt"));
-
         // TupleQueryResult result = conn.prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery).evaluate();
-
         // while (result.hasNext()) {
         //     BindingSet bindingSet = result.next();
         //     System.out.println(bindingSet);
         // }
-
-        // String sqlQuery = ((OntopRepositoryConnection) conn).reformulateIntoNativeQuery(sparqlQuery);
-        // System.out.println();
-        // System.out.println("The reformulated SQL query:");
-        // System.out.println("=======================");
-        // System.out.println(sqlQuery);
-        // System.out.println();
             
 
-
-        // ===================
-        // Generate UCQ SPARQL
-        // ===================
-        // System.out.println("\n===================\nGenerate UCQ SPARQL\n===================");
-        // StringBuilder minCompSparqlQuery = ui.generateSparqlUCQ(lambda.get(0).size(), prefixList, minComp_sparql_disjuncts);
-
-		// System.out.print("\nUCQ SPARQL query generated (p: print to file, enter: continue): ");
-		// Scanner inputReader = new Scanner(System.in);
-		// if(inputReader.nextLine().equals("p")){
-
-        //     fileOut.println("\n---------------------------UCQ-----------------------------\n" + minCompSparqlQuery);
-		// }
-
-
-
-        // ======================================
-        // Compute Approximations through Borders
-        // // ======================================
-        // System.out.println("\n======================================\nCompute Approximations through Borders\n======================================");
-
-        // List<HashMap<Integer, Set<MembershipAssertion>>> border_dictionary = ui.generateBorders(cqs);
-        // System.out.println("Generated " + border_dictionary.size() + " borders.");
-
-
-		// boolean cycle = true;
-		// while (cycle) {
-		// 	System.out.print("\nDo you want to try changing the radius? (y/n) ");
-		// 	String choice = inputReader.nextLine();
-
-		// 	switch (choice) {
-		// 		case "n":
-		// 			return;
-
-		// 		case "y": {
-		// 			// Ask to choose the radius (incr, decr, exact_value)
-		// 			System.out.print("Provide a value for radius: ");
-
-		// 			// Update radius value
-		// 			radius = Integer.parseInt(inputReader.nextLine());
-
-
-		// 			List<List<MembershipAssertion>> aprxucq = ui.computeApproximation(border_dictionary, radius);
-		// 			List<String> sparqlAprxDisjuncts = new LinkedList<String>();
-		// 			for(List<MembershipAssertion> ad : aprxucq){
-		// 				sparqlAprxDisjuncts.add(ui.sparqlTranslate(ad, prefixList, pm));
-		// 			}
-		// 			StringBuilder sparql_approximated_queries = ui.generateSparqlUCQ(lambda.get(0).size(), prefixList, sparqlAprxDisjuncts);
-
-		// 			System.out.println("\n\nSPARQL query (radius=" + radius + "): \n\n" + sparql_approximated_queries);
-        //             fileOut.println("\n\nSPARQL query (radius=" + radius + "): \n\n" + sparql_approximated_queries);
-					
-		// 		}
-
-		// 	}
-		// }
-
-        // inputReader.close();
         fileOut.close();
         logOut.close();
 

@@ -37,6 +37,7 @@ public interface IUtils {
 
 
     /**
+	 * !!!DEPRECATED!!!
 	 * Operates a variable substitution (xs and ys) over the atoms composing a
 	 * single disjunct
 	 * 
@@ -49,7 +50,7 @@ public interface IUtils {
      * @throws FileNotFoundException 
      * @throws IOException 
 	 */
-	List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws FileNotFoundException, IOException;
+	// List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws FileNotFoundException, IOException;
 
 
     /**
@@ -90,13 +91,14 @@ public interface IUtils {
 
 
 	/**
+	 * !!!DEPRECTAED!!!
 	 * Generates the border with radius 0 of a given tuple from lambda
 	 * @param tuple tuple from lambda
 	 * @param abox abox file materialization
 	 * @return the border with radius 0 of the given tuple
 	 * @throws IOException 
 	 */
-	List<MembershipAssertion> generateBorder0(List<String> tuple, File abox) throws IOException;
+	// List<MembershipAssertion> generateBorder0(List<String> tuple, File abox) throws IOException;
 
 	
 	/**

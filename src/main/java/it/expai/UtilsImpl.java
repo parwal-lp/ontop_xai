@@ -35,8 +35,6 @@ public class UtilsImpl implements IUtils {
     public List<List<String>> getLambda(String path) throws FileNotFoundException, IOException, CsvValidationException {
         List<List<String>> res = new LinkedList<List<String>>();
 		
-		// Read csv file and derive tuples of lambda
-		
 		List<String> tuple = new LinkedList<String>();
 		
 		try (CSVReader reader = new CSVReader(new FileReader(path))) {
@@ -58,19 +56,14 @@ public class UtilsImpl implements IUtils {
 		HashMap<String, Integer> res = new HashMap<String, Integer>();
 		int y_counter = 1;
 
-
-		//Scanner myReader = new Scanner(abox, "UTF-8");
 		FileReader fr = new FileReader(abox);
         BufferedReader br = new BufferedReader(fr);
 		String row;
 		
 
 		while ((row = br.readLine()) != null) {
-		//while (myReader.hasNextLine()) {
-
-			//String row = myReader.nextLine();
+			
 			MembershipAssertion assertion = assertionFromTriple(row);
-			//System.out.println(assertion);
 
 			if(assertion.getClass().equals(Concept.class)) {
 				Concept mac = (Concept)assertion;
@@ -93,7 +86,6 @@ public class UtilsImpl implements IUtils {
 			}
 		}
 
-		//myReader.close();
 		br.close();
 		return res;
 	}
@@ -123,24 +115,13 @@ public class UtilsImpl implements IUtils {
 
 
 		if(predicate.endsWith("#type>")){ // è un concetto
-			//concept like
 			int hashIndex = object.indexOf('#');
 			String namespace = object.substring(1, hashIndex);
 			String localName = object.substring(hashIndex, object.length()-1);
 			String term = subject.substring(0, subject.length());
 			return new Concept(namespace, localName, term);
-			//String namespace = object.substring(object.indexOf("<")+1, object.indexOf("#"));
-			// System.out.println("namespace: "+namespace);
-			//String localName = object.substring(object.indexOf("#"), object.indexOf(">"));
-			// System.out.println("localname: "+localName);
-
-			//String terms = subject.substring(subject.indexOf("<")+1, subject.indexOf(">"));
-			//assertion = new Concept(namespace, localName, terms);
-
-			// System.out.println("terms "+terms);
 		}
 		else { // è un ruolo
-			//role like
 			int hashIndex = predicate.indexOf('#');
 			String namespace = predicate.substring(0, hashIndex);
 			String localName = predicate.substring(hashIndex, predicate.length());
@@ -159,78 +140,20 @@ public class UtilsImpl implements IUtils {
 			}
 
 			return new Role(namespace, localName, terms[0], terms[1]);
-
-			// String namespace = predicate.substring(predicate.indexOf("<")+1, predicate.indexOf("#"));
-			// System.out.println("namespace: "+namespace);
-			// String localName = predicate.substring(predicate.indexOf("#"), predicate.indexOf(">"));
-			// System.out.println("localname: "+localName);
-
-			// String terms = subject.replace(",", "")+','+object.replace(",", "");
-			// String domain = terms.split(",")[0];
-			// String range = terms.split(",")[1];
-
-			//il range può essere un literal oppure un IRI
-			// if(range.contains("\"")){ //se è un literal tengo solo il suo valore
-			// 	range = range.substring(range.indexOf("\"") + 1, range.indexOf("\"", range.indexOf("\"")+1));
-			// }
-
-			//assertion = new Role(namespace, localName, domain, range);
-			
-			// System.out.println("domain: "+domain);
-			// System.out.println("range: "+range);
 		}
-
-		//return assertion;
 	}
 
+
+
 	@Override
-    public List<MembershipAssertion> generateBorder0(List<String> tuple, File abox) throws IOException {
-        List<MembershipAssertion> disjunct = new LinkedList<MembershipAssertion>();
-
-		Set<String> tupleSet = new HashSet<String>(tuple);
-
-		FileReader fr = new FileReader(abox);
-        BufferedReader br = new BufferedReader(fr);
-		String row;
-		
-		while ((row = br.readLine()) != null) {
-			
-			MembershipAssertion assertion = assertionFromTriple(row);
-			
-			if(assertion instanceof Concept) {
-				Concept mac = (Concept)assertion;
-				String term = mac.getConceptTerm();
-				MembershipAssertion temp;
-				
-				if(tupleSet.contains(term)) {
-					temp = new Concept(mac.getNamespace(), mac.getLocalName(), term);
-					disjunct.add(temp);
-				}
-			}
-			else if(assertion instanceof Role) {
-				Role mar = (Role)assertion;
-				String term_domain = mar.getDomainTerm();
-				String term_range = mar.getRangeTerm();
-			
-				MembershipAssertion temp;
-				
-				if(tupleSet.contains(term_domain) || tupleSet.contains(term_range)) {
-					temp = new Role(mar.getNamespace(), mar.getLocalName(), term_domain, term_range);
-					disjunct.add(temp);
-				}
-			}
-
-		}
-		br.close();
-		return disjunct;
-    }
-
-		@Override
     public List<MembershipAssertion> generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut) throws IOException {
     	Set<String> allFoundTerms = new HashSet<>(tuple);
     	Set<MembershipAssertion> disjunct = new HashSet<>();
 		
-		// Track assertions using a string key to avoid relying on object equality
+		// traccia le assertions trovate e aggiunte usando una chiave custom stringa
+		// serve perché l'oggetto assertion viene creato appena prima di aggiungerlo a disjunct
+		// e quindi controllando l'hash non verrebbe mai trovata dentro il set disjunct, perché ogni volta ha un hash nuovo quello appena creato
+		//diverso da quelli inserito prima
 		Set<String> addedAssertionKeys = new HashSet<>();
 
 
@@ -253,15 +176,11 @@ public class UtilsImpl implements IUtils {
 				if(assertion instanceof Concept) {
 					Concept mac = (Concept)assertion;
 					String term = mac.getConceptTerm();
-					// Create a unique key for this assertion
+
 					String assertionKey = "C:" + mac.getConceptName() + ":" + term;
-					//logOut.println("assertion "+assertion);
-					//logOut.println("assertionKey "+assertionKey);
 
 
 					if(allFoundTerms.contains(term) && !addedAssertionKeys.contains(assertionKey)) {
-						logOut.println("!!!!!!!!Found concept assertion: " + assertion);
-						logOut.println("Current disjunct I add the assertion to: " + disjunct);
 						disjunct.add(assertion);
 						addedAssertionKeys.add(assertionKey);
 						newTerms.add(mac.getConceptName());
@@ -271,21 +190,15 @@ public class UtilsImpl implements IUtils {
 					Role mar = (Role)assertion;
 					String term_domain = mar.getDomainTerm();
 					String term_range = mar.getRangeTerm();
-					// Create a unique key for this assertion
 
-					//System.out.println("assertion "+assertion);
 					String assertionKey = "R:" + mar.getNamespace() + mar.getLocalName() + ":" + term_domain + ":" + term_range;
 					
 					if(allFoundTerms.contains(term_domain) && !addedAssertionKeys.contains(assertionKey)) {
-						//logOut.println("Found role assertion: " + assertion);
-						//logOut.println("Current disjunct I add the assertion to: " + disjunct);
 						disjunct.add(assertion);
 						addedAssertionKeys.add(assertionKey);
 						newTerms.add(term_range);
 					}
 					else if(allFoundTerms.contains(term_range) && !addedAssertionKeys.contains(assertionKey)) {
-						//logOut.println("Found role assertion: " + assertion);
-						//logOut.println("Current disjunct I add the assertion to: " + disjunct);
 						disjunct.add(assertion);
 						addedAssertionKeys.add(assertionKey);
 						newTerms.add(term_domain);
@@ -296,8 +209,6 @@ public class UtilsImpl implements IUtils {
 			br.close();
 			allFoundTerms.addAll(newTerms);
 			System.out.println("found " + newTerms.size() + " new terms at radius " + currentRadius);
-			//logOut.println("\nBORDER FOR TUPLE "+tuple+" at radius "+currentRadius+":");
-            //logOut.println(disjunct);
 
 			currentRadius++;
 
@@ -332,10 +243,6 @@ public class UtilsImpl implements IUtils {
 				else {
 					//it's a 'y'
 					//if not seen before, put it in dictionary and increment y counter, otherwise, take its value
-					//if(!dictionary.containsKey(term)) {
-					//	dictionary.put(term, y_counter++);
-					//}		
-					//temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+String.valueOf(dictionary.get(term)));
 					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+existentialVars.get(term));
 				}
 				query.add(temp);
@@ -387,134 +294,11 @@ public class UtilsImpl implements IUtils {
 	}
 
 
-	//old method, substituted by generateBorder (this one computes the minimally complete disjunct)
-	@Override
-    public List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws IOException {
-        List<MembershipAssertion> query = new LinkedList<MembershipAssertion>();
-		Map<String, Integer> dictionary = new HashMap<String, Integer>();	
-		int x_counter = 1, y_counter = 1;
-		//long start, end;
-		
-		for(String t : tuple) 
-			dictionary.put(t, x_counter++);
-
-		//System.out.println("\nTUPLA CORRENTE:");
-		//System.out.println(tuple);
-
-		Set<String> tupleSet = new HashSet<String>(tuple);
-
-		//start = System.nanoTime();
-
-		FileReader fr = new FileReader(abox);
-        BufferedReader br = new BufferedReader(fr);
-		String row;
-		
-
-		// Scanner myReader = new Scanner(abox, "UTF-8");
-		// int lines = 0;
-		// System.out.println("inizio a leggere abox");
-		// while ((row = br.readLine()) != null) {
-		// // while (myReader.hasNextLine()) {
-		//  	lines++;
-		//  }
-		// end = System.nanoTime();
-		// System.out.println("Il file abox ha " + lines + " righe (" + (end-start)/ 1_000_000_000.0 + " seconds to read it all)");
-
-		
-		// Scanner myReader = new Scanner(abox, "UTF-8");
-		// while (myReader.hasNextLine()) {
-		while ((row = br.readLine()) != null) {
-			// row = myReader.nextLine();
-			
-			MembershipAssertion assertion = assertionFromTriple(row);
-			
-			
-			//System.out.println("\nORA GUARDO L'ASSERZIONE "+assertion);
-			//if(assertion.getClass().equals(Concept.class)) {
-			
-			
-			if(assertion instanceof Concept) {
-				Concept mac = (Concept)assertion;
-				String term = mac.getConceptTerm();
-				MembershipAssertion temp;
-				
-				if(tupleSet.contains(term)) {
-					//it's an 'x'
-					//yet present in dictionary
-					//take value and transform in an 'x'
-					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "x"+dictionary.get(term));
-				}	
-				else {
-					//it's a 'y'
-					//if not seen before, put it in dictionary and increment y counter, otherwise, take its value
-					//if(!dictionary.containsKey(term)) {
-					//	dictionary.put(term, y_counter++);
-					//}		
-					//temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+String.valueOf(dictionary.get(term)));
-					temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+existentialVars.get(term));
-				}
-				query.add(temp);
-			}
-			
-			else if(assertion instanceof Role) {
-				Role mar = (Role)assertion;
-				String term_domain = mar.getDomainTerm();
-				String term_range = mar.getRangeTerm();
-				
-				String new_dom_term = "";
-				String new_ran_term = "";
-				
-				//analize domain term
-				//domain term is an 'x'
-				if(tupleSet.contains(term_domain)) {
-					new_dom_term = "x"+dictionary.get(term_domain);
-				}
-				//term is a 'y'
-				else {
-					//add it if not present
-					if(!dictionary.containsKey(term_domain)) {
-						dictionary.put(term_domain, y_counter++);
-					}
-					//new_dom_term = "y"+String.valueOf(dictionary.get(term_domain));
-					new_dom_term = "y"+existentialVars.get(term_domain);
-				}
-
-				//analize range term
-				//range term is an 'x'
-				if(tupleSet.contains(term_range)) {
-					new_ran_term = "x"+dictionary.get(term_range);
-				}
-				//range term is a 'y'
-				else {
-					//add if not present
-					if(!dictionary.containsKey(term_range)) {
-						dictionary.put(term_range, y_counter++);
-					}
-					//new_ran_term = "y"+String.valueOf(dictionary.get(term_range));
-					new_ran_term = "y"+existentialVars.get(term_range);
-				}
-				
-				MembershipAssertion temp = new Role(mar.getNamespace(), mar.getLocalName(), new_dom_term, new_ran_term);
-				query.add(temp);
-			}
-
-		}
-		//end = System.nanoTime();
-		br.close();
-		//System.out.println((end-start)/ 1_000_000_000.0 + " secondi per completare while");
-		// myReader.close();
-	
-		return query;
-    }
-
-
     @Override
     public String sparqlTranslate(List<MembershipAssertion> facts, String prefixList, PrefixManager pm) {
-        //List<String> variables = new LinkedList<String>();
 		Set<String> variables = new HashSet<>();
 
 		int max_x = 0;		
-		//System.out.println("sono " + facts.size() + " membership assertions");
 		int index = 0;
 		for(MembershipAssertion m : facts) {
 			//System.out.println(index++);
@@ -543,24 +327,14 @@ public class UtilsImpl implements IUtils {
 			}
 		}
 
-		//String x = "";
-		//System.out.println("aggiungo x alle variabili (inizio for)");
 		for(int i=0; i<max_x; i++) {
 			String new_x = "x"+String.valueOf(i+1);
 			variables.add(new_x);
-			
-			//x += "?x"+String.valueOf(i+1)+" ";
 		}
-		//System.out.println("finito calcolo variabili (fine for), sono: "+variables.size());
-
-		//String hat = prefixList + "SELECT DISTINCT " + x + "\nWHERE { \n";
-		//String hat = "SELECT DISTINCT " + x + "\nWHERE { \n";
 		String hat = "{\n";
-		//String body = "";
 		StringBuilder sb = new StringBuilder();
 		sb.append(hat);
 		
-		//System.out.println("inizio di nuovo a scorrere tutte le "+facts.size()+" membership assertions");
 		index = 0;
 		long lastPrintTime = System.currentTimeMillis(); // time of last print
 		long interval = 10_000;
@@ -568,7 +342,6 @@ public class UtilsImpl implements IUtils {
 			long now = System.currentTimeMillis();
 			if (now - lastPrintTime >= interval) {
 				lastPrintTime = now; // reset last print time
-				//print info
 				SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");    
 				Date date = new Date(now);
 				String pretty_now = sdf.format(date);
@@ -578,20 +351,13 @@ public class UtilsImpl implements IUtils {
 			index++;
 			
 			String prefix = pm.getShortForm(atom.getNamespace());
-			//System.out.println("prefix for "+atom.getNamespace()+" is "+prefix);
-			//if(atom.getClass().equals(Concept.class)) {
 			if(atom instanceof Concept) {
 				Concept c = (Concept) atom;
 				String term = c.getConceptTerm();
 				sb.append("?").append(term)
 						.append(" a ").append(c.getConceptName())
 						.append(".\n");
-				//body += "?"+((Concept)atom).getConceptTerm() + " a "+ prefix + atom.getLocalName()+". \n";
-				//if(!variables.contains(((Concept)atom).getConceptTerm())) {
-					//System.out.println("nuova variabile per concetto");
-				variables.add(term);
-				//}
-				
+				variables.add(term);				
 			}
 			else {
 				Role r = (Role) atom;
@@ -603,24 +369,11 @@ public class UtilsImpl implements IUtils {
 						.append(".\n");
 				variables.add(domain);
 				variables.add(range);
-				//body += "?"+((Role)atom).getDomainTerm()+" "+ prefix + atom.getLocalName()+" ?"+((Role)atom).getRangeTerm()+". \n";
-				//if(!variables.contains(((Role)atom).getDomainTerm())) {
-					//System.out.println("nuova variabile per dominio");
-				variables.add(domain);
-				//}
-				//if(!variables.contains(((Role)atom).getRangeTerm())) {
-					//System.out.println("nuova variabile per ruolo");
-				variables.add(range);
-				//}
 			}
-			//System.out.println("ora le variabili sono "+variables.size());
 		}
 		
-		//String q = hat+body+"} \n";
 		sb.append("}");
-		//String q = hat+body;
 		return sb.toString();
-		//return q.substring(0, q.length()-2)+"\n}";
     }
 
 
@@ -629,17 +382,10 @@ public class UtilsImpl implements IUtils {
         //extract all prefixes and their namespace and build the PREFIX part of the SPARQL queries
 
 		String prefix = "";
-		
-		//System.out.println("PREFIXES HERE!!!:");
-		//System.out.println(pm.getPrefixMap().toString());
 
 		for (Map.Entry<String, String> entry : pm.getPrefixMap().entrySet()) {
 			prefix += "PREFIX " + entry.getKey() + " <" + entry.getValue() +"> \n";
 		}
-
-		// for(String p : pm.getPrefixes()){
-		// 	prefix += "PREFIX " + p + " <" + pm.getNamespace(p) +"> \n";
-		// }
 
 		return prefix;
     }
@@ -667,7 +413,7 @@ public class UtilsImpl implements IUtils {
 		int size = sparqlDisjunctsBodies.size();
 
 		for (int d = 0; d < size; d++) {
-    		res.append(sparqlDisjunctsBodies.get(d)); //questo aggiunge una graffa chiusa di troppo
+    		res.append(sparqlDisjunctsBodies.get(d));
     		if (d < size-1) {
         		res.append(" \n\nUNION\n\n");
     		}
@@ -770,5 +516,145 @@ public class UtilsImpl implements IUtils {
 		return res;
 	}
 
+	/** 
+	 * !!!DEPRECATED!!!
+	 * method substitued by the more general and powerful generateBorderN
+	 * obtain the same behavior of generateBorder0 by calling generateBorderN passing radius=0
+	 */
+	// @Override
+    // public List<MembershipAssertion> generateBorder0(List<String> tuple, File abox) throws IOException {
+    //     List<MembershipAssertion> disjunct = new LinkedList<MembershipAssertion>();
+	// 	Set<String> tupleSet = new HashSet<String>(tuple);
+	// 	FileReader fr = new FileReader(abox);
+    //     BufferedReader br = new BufferedReader(fr);
+	// 	String row;
+		
+	// 	while ((row = br.readLine()) != null) {
+			
+	// 		MembershipAssertion assertion = assertionFromTriple(row);
+			
+	// 		if(assertion instanceof Concept) {
+	// 			Concept mac = (Concept)assertion;
+	// 			String term = mac.getConceptTerm();
+	// 			MembershipAssertion temp;
+				
+	// 			if(tupleSet.contains(term)) {
+	// 				temp = new Concept(mac.getNamespace(), mac.getLocalName(), term);
+	// 				disjunct.add(temp);
+	// 			}
+	// 		}
+	// 		else if(assertion instanceof Role) {
+	// 			Role mar = (Role)assertion;
+	// 			String term_domain = mar.getDomainTerm();
+	// 			String term_range = mar.getRangeTerm();
+			
+	// 			MembershipAssertion temp;
+				
+	// 			if(tupleSet.contains(term_domain) || tupleSet.contains(term_range)) {
+	// 				temp = new Role(mar.getNamespace(), mar.getLocalName(), term_domain, term_range);
+	// 				disjunct.add(temp);
+	// 			}
+	// 		}
+	// 	}
+	// 	br.close();
+	// 	return disjunct;
+    // }
 
+
+	/**
+	 * !!!DEPRECATED!!!
+	 * old method, substituted by generateBorder (this one computes the minimally complete disjunct)
+	 */
+	// @Override
+    // public List<MembershipAssertion> generateDisjunct(List<String> tuple, File abox, HashMap<String, Integer> existentialVars) throws IOException {
+    //     List<MembershipAssertion> query = new LinkedList<MembershipAssertion>();
+	// 	Map<String, Integer> dictionary = new HashMap<String, Integer>();	
+	// 	int x_counter = 1, y_counter = 1;
+	// 	//long start, end;
+		
+	// 	for(String t : tuple) 
+	// 		dictionary.put(t, x_counter++);
+
+	// 	//System.out.println("\nTUPLA CORRENTE:");
+	// 	//System.out.println(tuple);
+
+	// 	Set<String> tupleSet = new HashSet<String>(tuple);
+
+	// 	//start = System.nanoTime();
+
+	// 	FileReader fr = new FileReader(abox);
+    //     BufferedReader br = new BufferedReader(fr);
+	// 	String row;
+		
+	// 	while ((row = br.readLine()) != null) {
+			
+	// 		MembershipAssertion assertion = assertionFromTriple(row);			
+			
+	// 		if(assertion instanceof Concept) {
+	// 			Concept mac = (Concept)assertion;
+	// 			String term = mac.getConceptTerm();
+	// 			MembershipAssertion temp;
+				
+	// 			if(tupleSet.contains(term)) {
+	// 				//it's an 'x'
+	// 				//yet present in dictionary
+	// 				//take value and transform in an 'x'
+	// 				temp = new Concept(mac.getNamespace(), mac.getLocalName(), "x"+dictionary.get(term));
+	// 			}	
+	// 			else {
+	// 				//it's a 'y'
+	// 				//if not seen before, put it in dictionary and increment y counter, otherwise, take its value
+	// 				temp = new Concept(mac.getNamespace(), mac.getLocalName(), "y"+existentialVars.get(term));
+	// 			}
+	// 			query.add(temp);
+	// 		}
+			
+	// 		else if(assertion instanceof Role) {
+	// 			Role mar = (Role)assertion;
+	// 			String term_domain = mar.getDomainTerm();
+	// 			String term_range = mar.getRangeTerm();
+				
+	// 			String new_dom_term = "";
+	// 			String new_ran_term = "";
+				
+	// 			//analize domain term
+	// 			//domain term is an 'x'
+	// 			if(tupleSet.contains(term_domain)) {
+	// 				new_dom_term = "x"+dictionary.get(term_domain);
+	// 			}
+	// 			//term is a 'y'
+	// 			else {
+	// 				//add it if not present
+	// 				if(!dictionary.containsKey(term_domain)) {
+	// 					dictionary.put(term_domain, y_counter++);
+	// 				}
+	// 				//new_dom_term = "y"+String.valueOf(dictionary.get(term_domain));
+	// 				new_dom_term = "y"+existentialVars.get(term_domain);
+	// 			}
+
+	// 			//analize range term
+	// 			//range term is an 'x'
+	// 			if(tupleSet.contains(term_range)) {
+	// 				new_ran_term = "x"+dictionary.get(term_range);
+	// 			}
+	// 			//range term is a 'y'
+	// 			else {
+	// 				//add if not present
+	// 				if(!dictionary.containsKey(term_range)) {
+	// 					dictionary.put(term_range, y_counter++);
+	// 				}
+	// 				//new_ran_term = "y"+String.valueOf(dictionary.get(term_range));
+	// 				new_ran_term = "y"+existentialVars.get(term_range);
+	// 			}
+				
+	// 			MembershipAssertion temp = new Role(mar.getNamespace(), mar.getLocalName(), new_dom_term, new_ran_term);
+	// 			query.add(temp);
+	// 		}
+
+	// 	}
+	// 	br.close();
+	
+	// 	return query;
+    // }
+	
 }
