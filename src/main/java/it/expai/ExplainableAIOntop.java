@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.rio.ntriples.NTriplesWriter;
 
@@ -23,12 +22,6 @@ import it.unibz.inf.ontop.rdf4j.query.MaterializationGraphQuery;
 import it.unibz.inf.ontop.rdf4j.repository.OntopRepository;
 import it.unibz.inf.ontop.spec.mapping.PrefixManager;
 import it.unibz.inf.ontop.spec.mapping.pp.SQLPPMapping;
-
-
-import it.unibz.inf.ontop.rdf4j.repository.OntopRepositoryConnection;
-import org.eclipse.rdf4j.query.*;
-
-import java.nio.file.Files;
 
 public class ExplainableAIOntop {
 
@@ -84,7 +77,7 @@ public class ExplainableAIOntop {
 
 		Repository repo = OntopRepository.defaultRepository(configuration);
         repo.init();
-        RepositoryConnection conn = repo.getConnection();
+        repo.getConnection();
         System.out.println("Connessione avvenuta con successo!");
 
         SQLPPMapping ppMapping = configuration.loadProvidedPPMapping();

@@ -94,7 +94,7 @@ public class UtilsImpl implements IUtils {
 		}
 
 		//myReader.close();
-
+		br.close();
 		return res;
 	}
 
@@ -221,7 +221,7 @@ public class UtilsImpl implements IUtils {
 			}
 
 		}
-	
+		br.close();
 		return disjunct;
     }
 
@@ -393,7 +393,7 @@ public class UtilsImpl implements IUtils {
         List<MembershipAssertion> query = new LinkedList<MembershipAssertion>();
 		Map<String, Integer> dictionary = new HashMap<String, Integer>();	
 		int x_counter = 1, y_counter = 1;
-		long start, end;
+		//long start, end;
 		
 		for(String t : tuple) 
 			dictionary.put(t, x_counter++);
@@ -403,7 +403,7 @@ public class UtilsImpl implements IUtils {
 
 		Set<String> tupleSet = new HashSet<String>(tuple);
 
-		start = System.nanoTime();
+		//start = System.nanoTime();
 
 		FileReader fr = new FileReader(abox);
         BufferedReader br = new BufferedReader(fr);
@@ -499,7 +499,8 @@ public class UtilsImpl implements IUtils {
 			}
 
 		}
-		end = System.nanoTime();
+		//end = System.nanoTime();
+		br.close();
 		//System.out.println((end-start)/ 1_000_000_000.0 + " secondi per completare while");
 		// myReader.close();
 	
