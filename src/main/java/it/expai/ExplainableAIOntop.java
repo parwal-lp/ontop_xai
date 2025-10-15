@@ -146,6 +146,7 @@ public class ExplainableAIOntop {
         // Compute Exlanation
         // ==================
         System.out.println("\n==================\nCompute Exlanation\n==================");
+        long startExpl = System.nanoTime();
         int count = 0;
 		
         
@@ -158,12 +159,12 @@ public class ExplainableAIOntop {
 
         fileOut.println(head);
 
-
-        long startExpl = System.nanoTime();
         for (List<String> tuple : lambda) {
+            long startTuple, endTuple;
             count++;
 
             System.out.println("\n============ Processing tuple "+count +"/"+lambdaSize+": "+tuple+" ============");
+            startTuple = System.nanoTime();
 
             start = System.nanoTime();
 			List<MembershipAssertion> border = ui.generateBorderN(tuple, abox, 1, logOut);
@@ -189,12 +190,18 @@ public class ExplainableAIOntop {
             if (count < lambdaSize) {
                 fileOut.println("\nUNION\n");
             }
-            
+            endTuple = System.nanoTime();
+            System.out.println("Total time for tuple processing [" + (endTuple - startTuple) / 1_000_000_000.0 + " seconds]");
 		}
         fileOut.println("\n}");
 
         long endExpl = System.nanoTime();
-        System.out.println("\nExplanation computed and printed to file ("+explFile+"). [" + ((endExpl - startExpl) / 1_000_000_000.0 / 60.0) + " minutes]");
+        long totElapsedTime = endExpl - startExpl;
+        System.out.println("\n============ END COMPUTATION ============");
+        if (totElapsedTime > 60_000_000_000L)
+            System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
+        else
+            System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
 
 
         // =======================

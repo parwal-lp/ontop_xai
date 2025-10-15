@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
@@ -160,9 +159,6 @@ public class UtilsImpl implements IUtils {
 
 		int currentRadius = 0;
 		while (currentRadius <= radius) {
-
-			System.out.println("terms for disjunct computation at radius "+currentRadius+": " + allFoundTerms);
-			logOut.println("terms che cerco in questo giro "+allFoundTerms);
 			Set<String> newTerms = new HashSet<>(); //qui vado a mettere quelli nuovi che serviranno al prossimo raggio
 			
 			FileReader fr = new FileReader(abox);
@@ -207,9 +203,11 @@ public class UtilsImpl implements IUtils {
 
 			}
 			br.close();
-			allFoundTerms.addAll(newTerms);
-			System.out.println("found " + newTerms.size() + " new terms at radius " + currentRadius);
 
+			logOut.println("\nterms used to generate disjuncts at radius "+currentRadius+": "+newTerms);
+			logOut.println("disjunct size at radius "+currentRadius+": "+disjunct.size());
+
+			allFoundTerms.addAll(newTerms);
 			currentRadius++;
 
 		}
