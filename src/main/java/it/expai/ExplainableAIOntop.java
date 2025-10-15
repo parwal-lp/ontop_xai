@@ -24,6 +24,12 @@ import it.unibz.inf.ontop.rdf4j.repository.OntopRepository;
 import it.unibz.inf.ontop.spec.mapping.PrefixManager;
 import it.unibz.inf.ontop.spec.mapping.pp.SQLPPMapping;
 
+
+import it.unibz.inf.ontop.rdf4j.repository.OntopRepositoryConnection;
+import org.eclipse.rdf4j.query.*;
+
+import java.nio.file.Files;
+
 public class ExplainableAIOntop {
 
     static UtilsImpl ui = new UtilsImpl();
@@ -61,6 +67,7 @@ public class ExplainableAIOntop {
         fis.close();
 
         PrintStream fileOut = new PrintStream(new FileOutputStream(explFile));
+        PrintStream logOut = new PrintStream(new FileOutputStream(logFile));
         long start, end;
         float seconds;
 
@@ -77,9 +84,8 @@ public class ExplainableAIOntop {
 
 		Repository repo = OntopRepository.defaultRepository(configuration);
         repo.init();
-        try (RepositoryConnection conn = repo.getConnection()) {
-            System.out.println("Connessione avvenuta con successo!");
-        }
+        RepositoryConnection conn = repo.getConnection();
+        System.out.println("Connessione avvenuta con successo!");
 
         SQLPPMapping ppMapping = configuration.loadProvidedPPMapping();
         PrefixManager pm = ppMapping.getPrefixManager();
@@ -87,6 +93,7 @@ public class ExplainableAIOntop {
 
 
 
+if (true) {
         //==================
         // Retrieve the ABox
         //==================
@@ -171,14 +178,16 @@ public class ExplainableAIOntop {
             System.out.println("\n============ Processing tuple "+count +"/"+lambdaSize+": "+tuple+" ============");
 
             start = System.nanoTime();
-			List<MembershipAssertion> border = ui.generateBorder0(tuple, abox);
+			List<MembershipAssertion> border = ui.generateBorderN(tuple, abox, 1, logOut);
             end = System.nanoTime();
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
             System.out.println("Border computed in " + (end - start) / 1_000_000_000.0 + " seconds");
+
             //long heapFreeSize = Runtime.getRuntime().freeMemory();  // Free heap size
             //System.out.println("Free Heap Size: " + (heapFreeSize / (1024 * 1024)) + " MB");
 			// cqs.add(temp);
+
 
             start = System.nanoTime();
 			List<MembershipAssertion> disj = ui.replaceConstVar(tuple, border, existentialVars);
@@ -191,13 +200,40 @@ public class ExplainableAIOntop {
             end = System.nanoTime();
             System.out.println("SPARQL Query computed in " + (end - start) / 1_000_000_000.0 + " seconds");
             
-            fileOut.println("\nUNION\n");
             fileOut.println(query_sparql);
+            if (count < lambdaSize) {
+                fileOut.println("\nUNION\n");
+            }
+            
 		}
         fileOut.println("\n}");
 
         long endExpl = System.nanoTime();
         System.out.println("\nExplanation computed and printed to file ("+explFile+"). [" + ((endExpl - startExpl) / 1_000_000_000.0 / 60.0) + " minutes]");
+}
+
+
+        // =======================
+        // Compute Certain Answers
+        // =======================
+        // System.out.println("\n=======================\nCompute Certain Answers\n=======================");
+
+        // String sparqlQuery = Files.readString(Paths.get("src/main/resources/npd/query.txt"));
+
+        // TupleQueryResult result = conn.prepareTupleQuery(QueryLanguage.SPARQL, sparqlQuery).evaluate();
+
+        // while (result.hasNext()) {
+        //     BindingSet bindingSet = result.next();
+        //     System.out.println(bindingSet);
+        // }
+
+        // String sqlQuery = ((OntopRepositoryConnection) conn).reformulateIntoNativeQuery(sparqlQuery);
+        // System.out.println();
+        // System.out.println("The reformulated SQL query:");
+        // System.out.println("=======================");
+        // System.out.println(sqlQuery);
+        // System.out.println();
+            
 
 
         // ===================
@@ -258,6 +294,7 @@ public class ExplainableAIOntop {
 
         // inputReader.close();
         fileOut.close();
+        logOut.close();
 
         
         repo.shutDown();

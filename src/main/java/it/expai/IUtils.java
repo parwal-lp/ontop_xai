@@ -3,6 +3,7 @@ package it.expai;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
 
@@ -97,6 +98,18 @@ public interface IUtils {
 	 */
 	List<MembershipAssertion> generateBorder0(List<String> tuple, File abox) throws IOException;
 
+	
+	/**
+	 * Generates the border with radius n of a given tuple from lambda
+	 * @param tuple tuple from lambda
+	 * @param abox abox file materialization
+	 * @param radius radius n
+	 * @param logOut print stream del file utilizzato per stampare i log per scopi di debug
+	 * @return the border with radius n of the given tuple
+	 * @throws IOException 
+	 */
+    List<MembershipAssertion> generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut) throws IOException;
+
 
 	/**
 	 * Generates the CQ disjunct with variables stating from the border with constants
@@ -106,4 +119,7 @@ public interface IUtils {
 	 * @throws IOException
 	 */
 	List<MembershipAssertion> replaceConstVar(List<String> tuple, List<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException;
+
+
+
 }

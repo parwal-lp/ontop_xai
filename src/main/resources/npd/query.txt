@@ -1,0 +1,634 @@
+SELECT ?x1 ?x2 
+WHERE {
+
+{
+}
+
+UNION
+
+{
+?y26703 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y26656 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79463 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17691 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176809 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26662 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17840 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176815 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26669 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17779 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176822 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26673 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79372 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17787 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176826 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26675 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17764 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176828 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26688 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79484 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17799 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176841 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26692 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79536 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17680 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176845 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26719 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79369 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17689 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176870 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26734 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79334 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17727 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176885 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26736 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17834 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176887 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26743 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17674 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176895 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26771 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17733 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176924 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26777 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79303 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17737 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176930 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26778 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17739 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176931 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26804 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17968 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y176957 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26849 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79332 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17656 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177002 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26874 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17654 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177027 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26883 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79331 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17652 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177036 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27050 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y26893 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17658 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177045 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26916 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17762 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177066 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26926 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17766 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177076 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26957 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79312 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17670 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177107 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y26978 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17687 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177128 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27100 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y26996 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17707 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177146 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27000 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79366 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17693 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177150 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27010 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17771 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177160 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27011 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17773 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177161 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27015 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17725 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177165 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27019 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17695 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177170 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27021 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17775 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177172 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27022 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17777 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177173 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27035 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17682 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177186 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27046 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17893 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177198 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27060 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79335 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17660 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177211 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27070 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17703 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27103 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17768 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27124 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79376 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17701 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177568 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27138 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17699 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177590 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27178 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17830 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177714 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27395 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27194 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79365 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17741 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177740 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27216 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17697 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177844 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27275 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27259 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79843 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17846 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y177997 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27260 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17889 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178002 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27283 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79861 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17915 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178062 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27288 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79737 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17805 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178077 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27299 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79865 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17913 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178104 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27399 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27300 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17713 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178106 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27304 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79818 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17844 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178111 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27784 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27342 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79544 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17715 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27363 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17782 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178250 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27382 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79869 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17868 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178292 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27393 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79572 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17711 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178311 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27609 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27447 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17838 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27470 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79848 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17723 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178563 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27489 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79487 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17791 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178635 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27610 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27492 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17676 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27537 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27495 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79492 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17709 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27558 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27552 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17789 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27554 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79772 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y17832 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y178868 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27603 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17717 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y179021 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27705 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27628 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17836 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y179075 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27637 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17970 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y179111 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27643 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17891 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y179139 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27644 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17721 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y179142 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27659 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17853 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y179222 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27713 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17719 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27783 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17905 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y65290 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27806 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27789 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17842 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y25639 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y25638 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17855 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y180047 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27858 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17972 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y65318 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y180093 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27921 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27915 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79882 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y18076 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y27936 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27919 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y18080 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y180347 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+UNION
+
+{
+?y27970 <http://sws.ifi.uio.no/vocab/npd-v2#wellboreParent> ?x1.
+?y27957 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y79911 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y18078 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+}
+
+UNION
+
+{
+?y28032 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+?y17881 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x2.
+?y180604 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?x1.
+}
+
+}

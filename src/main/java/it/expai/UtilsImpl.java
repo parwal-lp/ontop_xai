@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -125,8 +126,8 @@ public class UtilsImpl implements IUtils {
 			//concept like
 			int hashIndex = object.indexOf('#');
 			String namespace = object.substring(1, hashIndex);
-			String localName = object.substring(hashIndex, object.length() - 1);
-			String term = subject.substring(1, subject.length() - 1);
+			String localName = object.substring(hashIndex, object.length()-1);
+			String term = subject.substring(0, subject.length());
 			return new Concept(namespace, localName, term);
 			//String namespace = object.substring(object.indexOf("<")+1, object.indexOf("#"));
 			// System.out.println("namespace: "+namespace);
@@ -141,8 +142,8 @@ public class UtilsImpl implements IUtils {
 		else { // è un ruolo
 			//role like
 			int hashIndex = predicate.indexOf('#');
-			String namespace = predicate.substring(1, hashIndex);
-			String localName = predicate.substring(hashIndex, predicate.length() - 1);
+			String namespace = predicate.substring(0, hashIndex);
+			String localName = predicate.substring(hashIndex, predicate.length());
 
 			String[] terms = new String[2];
 			String subj = subject.replace(",", "");
@@ -222,6 +223,86 @@ public class UtilsImpl implements IUtils {
 		}
 	
 		return disjunct;
+    }
+
+		@Override
+    public List<MembershipAssertion> generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut) throws IOException {
+    	Set<String> allFoundTerms = new HashSet<>(tuple);
+    	Set<MembershipAssertion> disjunct = new HashSet<>();
+		
+		// Track assertions using a string key to avoid relying on object equality
+		Set<String> addedAssertionKeys = new HashSet<>();
+
+
+
+		int currentRadius = 0;
+		while (currentRadius <= radius) {
+
+			System.out.println("terms for disjunct computation at radius "+currentRadius+": " + allFoundTerms);
+			logOut.println("terms che cerco in questo giro "+allFoundTerms);
+			Set<String> newTerms = new HashSet<>(); //qui vado a mettere quelli nuovi che serviranno al prossimo raggio
+			
+			FileReader fr = new FileReader(abox);
+			BufferedReader br = new BufferedReader(fr);
+			String row;
+
+			while ((row = br.readLine()) != null) {
+				MembershipAssertion assertion = assertionFromTriple(row);
+				
+				
+				if(assertion instanceof Concept) {
+					Concept mac = (Concept)assertion;
+					String term = mac.getConceptTerm();
+					// Create a unique key for this assertion
+					String assertionKey = "C:" + mac.getConceptName() + ":" + term;
+					//logOut.println("assertion "+assertion);
+					//logOut.println("assertionKey "+assertionKey);
+
+
+					if(allFoundTerms.contains(term) && !addedAssertionKeys.contains(assertionKey)) {
+						logOut.println("!!!!!!!!Found concept assertion: " + assertion);
+						logOut.println("Current disjunct I add the assertion to: " + disjunct);
+						disjunct.add(assertion);
+						addedAssertionKeys.add(assertionKey);
+						newTerms.add(mac.getConceptName());
+					}
+				}
+				else if(assertion instanceof Role) {
+					Role mar = (Role)assertion;
+					String term_domain = mar.getDomainTerm();
+					String term_range = mar.getRangeTerm();
+					// Create a unique key for this assertion
+
+					//System.out.println("assertion "+assertion);
+					String assertionKey = "R:" + mar.getNamespace() + mar.getLocalName() + ":" + term_domain + ":" + term_range;
+					
+					if(allFoundTerms.contains(term_domain) && !addedAssertionKeys.contains(assertionKey)) {
+						//logOut.println("Found role assertion: " + assertion);
+						//logOut.println("Current disjunct I add the assertion to: " + disjunct);
+						disjunct.add(assertion);
+						addedAssertionKeys.add(assertionKey);
+						newTerms.add(term_range);
+					}
+					else if(allFoundTerms.contains(term_range) && !addedAssertionKeys.contains(assertionKey)) {
+						//logOut.println("Found role assertion: " + assertion);
+						//logOut.println("Current disjunct I add the assertion to: " + disjunct);
+						disjunct.add(assertion);
+						addedAssertionKeys.add(assertionKey);
+						newTerms.add(term_domain);
+					}
+				}
+
+			}
+			br.close();
+			allFoundTerms.addAll(newTerms);
+			System.out.println("found " + newTerms.size() + " new terms at radius " + currentRadius);
+			//logOut.println("\nBORDER FOR TUPLE "+tuple+" at radius "+currentRadius+":");
+            //logOut.println(disjunct);
+
+			currentRadius++;
+
+		}
+        return new LinkedList<MembershipAssertion>(disjunct);
     }
 
 	@Override
@@ -502,7 +583,7 @@ public class UtilsImpl implements IUtils {
 				Concept c = (Concept) atom;
 				String term = c.getConceptTerm();
 				sb.append("?").append(term)
-						.append(" a ").append(prefix).append(c.getLocalName())
+						.append(" a ").append(c.getConceptName())
 						.append(".\n");
 				//body += "?"+((Concept)atom).getConceptTerm() + " a "+ prefix + atom.getLocalName()+". \n";
 				//if(!variables.contains(((Concept)atom).getConceptTerm())) {
@@ -566,7 +647,7 @@ public class UtilsImpl implements IUtils {
 	public StringBuilder generateSparqlUCQ(Integer n, String prefix_list, List<String> sparqlDisjunctsBodies){
 
 		/*
-		 * Nota: la sintassi prevede una singola SELECT e una serie di blocci in UNION all'interno della WHERE
+		 * Nota: la sintassi prevede una singola SELECT e una serie di blocchi in UNION all'interno della WHERE
 		 * Valutare come modificare coerentemente rispetto all'algoritmo dell'articolo
 		 */
 
