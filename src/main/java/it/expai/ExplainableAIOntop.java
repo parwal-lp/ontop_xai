@@ -28,7 +28,8 @@ public class ExplainableAIOntop {
     static UtilsImpl ui = new UtilsImpl();
 
     static String owlFile;
-    static String obdaFile;
+    //static String obdaFile;
+    static String mappingFile;
     static String lambdaFile;
     static String aboxFile;
     static String logFile;
@@ -51,7 +52,8 @@ public class ExplainableAIOntop {
         p.load(propertyFileStream);
 
         owlFile = p.getProperty("owlFile");
-        obdaFile = p.getProperty("obdaFile");
+        //obdaFile = p.getProperty("obdaFile");
+        mappingFile = p.getProperty("mappingFile");
         lambdaFile = p.getProperty("lambdaFile");
         aboxFile = p.getProperty("aboxFile");
         logFile = p.getProperty("logFile");
@@ -70,7 +72,8 @@ public class ExplainableAIOntop {
         System.out.println("\n===========================\nConnessione a Ontop e MySQL\n===========================");
         OntopSQLOWLAPIConfiguration configuration = OntopSQLOWLAPIConfiguration.defaultBuilder()
                 .ontologyFile(owlFile)
-                .nativeOntopMappingFile(obdaFile)
+                //.nativeOntopMappingFile(obdaFile)
+                .r2rmlMappingFile(mappingFile)
                 .propertyFile(propertyFile)
                 .enableTestMode()
                 .build();
