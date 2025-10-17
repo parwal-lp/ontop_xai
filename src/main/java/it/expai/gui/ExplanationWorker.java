@@ -1,25 +1,15 @@
 package it.expai.gui;
 
 import it.expai.*;
-import it.unibz.inf.ontop.injection.OntopSQLOWLAPIConfiguration;
-import it.unibz.inf.ontop.materialization.MaterializationParams;
-import it.unibz.inf.ontop.rdf4j.materialization.RDF4JMaterializer;
-import it.unibz.inf.ontop.rdf4j.query.MaterializationGraphQuery;
-import it.unibz.inf.ontop.rdf4j.repository.OntopRepository;
-import it.unibz.inf.ontop.spec.mapping.PrefixManager;
-import it.unibz.inf.ontop.spec.mapping.pp.SQLPPMapping;
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.rio.RDFWriter;
-import org.eclipse.rdf4j.rio.ntriples.NTriplesWriter;
-
 import java.io.*;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
 import java.util.function.Consumer;
 
-
+/**
+ * Background worker for running the explanation computation.
+ * Runs in a separate thread and provides callbacks for UI updates.
+ * This is a thin wrapper that redirects output to the GUI and calls
+ * the main computation logic from ExplainableAIOntop.
+ */
 public class ExplanationWorker implements Runnable {
     
     private final String propertyFile;
@@ -31,7 +21,7 @@ public class ExplanationWorker implements Runnable {
     private final Runnable onCancelled;
     
     private volatile boolean running = false;
-    private volatile boolean cancelled = false;
+    private ExplainableAIOntop app; // Keep reference to app instance
     
     public ExplanationWorker(String propertyFile, int radius,
                             Consumer<String> outputCallback,
@@ -53,7 +43,7 @@ public class ExplanationWorker implements Runnable {
     }
     
     public void cancel() {
-        cancelled = true;
+        // Also tell the app instance to stop if it exists
     }
     
     @Override
@@ -63,11 +53,15 @@ public class ExplanationWorker implements Runnable {
         try {
             runExplanation();
             
-            if (cancelled) {
+            if (Thread.currentThread().isInterrupted()) {
                 onCancelled.run();
             } else {
                 onComplete.run();
             }
+        } catch (InterruptedException e) {
+            // Thread was interrupted - treat as cancellation
+            outputCallback.accept("Computation interrupted");
+            onCancelled.run();
         } catch (Exception e) {
             e.printStackTrace();
             outputCallback.accept("ERROR: " + e.getMessage());
@@ -79,14 +73,16 @@ public class ExplanationWorker implements Runnable {
     }
     
     private void runExplanation() throws Exception {
-        UtilsImpl ui = new UtilsImpl();
+        // Redirect System.out to capture output for GUI
+        PrintStream originalOut = System.out;
+        PrintStream originalErr = System.err;
         
-        // Custom PrintStream that forwards to callbacks
+        // Create custom PrintStream that forwards to callbacks
         PrintStream outputStream = new PrintStream(new OutputStream() {
             private StringBuilder buffer = new StringBuilder();
             
             @Override
-            public void write(int b) {
+            public void write(int b) throws IOException {
                 if (b == '\n') {
                     outputCallback.accept(buffer.toString());
                     buffer.setLength(0);
@@ -96,233 +92,28 @@ public class ExplanationWorker implements Runnable {
             }
         }, true);
         
-        PrintStream logStream = new PrintStream(new OutputStream() {
-            private StringBuilder buffer = new StringBuilder();
-            
-            @Override
-            public void write(int b) {
-                if (b == '\n') {
-                    logCallback.accept(buffer.toString());
-                    buffer.setLength(0);
-                } else {
-                    buffer.append((char) b);
-                }
-            }
-        }, true);
-        
-        // Redirect System.out temporarily
-        PrintStream originalOut = System.out;
+        // Redirect System.out to our custom stream
         System.setOut(outputStream);
+        System.setErr(outputStream);
+        
+        // Create an ExplainableAIOntop instance and keep reference
+        app = new ExplainableAIOntop();
         
         try {
-            // Load properties
-            outputCallback.accept("========================================================");
-            outputCallback.accept("Setup Properties for connection to Database and to Ontop");
-            outputCallback.accept("========================================================");
+            // Call the computation method
+            // The output will be captured by our redirected System.out
+            app.computeExplanation(propertyFile, radius);
             
-            Properties p = new Properties();
-            try (FileInputStream propertyFileStream = new FileInputStream(propertyFile)) {
-                p.load(propertyFileStream);
-            }
-            
-            String owlFile = p.getProperty("owlFile");
-            String mappingFile = p.getProperty("mappingFile");
-            String lambdaFile = p.getProperty("lambdaFile");
-            String aboxFile = p.getProperty("aboxFile");
-            String logFile = p.getProperty("logFile");
-            String explFile = p.getProperty("explFile");
-            
-            if (cancelled) return;
-            
-            // Connect to Ontop
-            outputCallback.accept("\n===========================");
-            outputCallback.accept("Connessione a Ontop e MySQL");
-            outputCallback.accept("===========================");
-            
-            OntopSQLOWLAPIConfiguration configuration = OntopSQLOWLAPIConfiguration.defaultBuilder()
-                    .ontologyFile(owlFile)
-                    .r2rmlMappingFile(mappingFile)
-                    .propertyFile(propertyFile)
-                    .enableTestMode()
-                    .build();
-            
-            Repository repo = OntopRepository.defaultRepository(configuration);
-            repo.init();
-            repo.getConnection();
-            outputCallback.accept("Connessione avvenuta con successo!");
-            
-            SQLPPMapping ppMapping = configuration.loadProvidedPPMapping();
-            PrefixManager pm = ppMapping.getPrefixManager();
-            String prefixList = ui.getPrefix(pm);
-            
-            if (cancelled) {
-                repo.shutDown();
-                return;
-            }
-            
-            
-            // Retrieve ABox
-            outputCallback.accept("\n=================");
-            outputCallback.accept("Retrieve the ABox");
-            outputCallback.accept("=================");
-            
-            MaterializationParams materializationParams = MaterializationParams.defaultBuilder().build();
-            RDF4JMaterializer materializer = RDF4JMaterializer.defaultMaterializer(configuration, materializationParams);
-            MaterializationGraphQuery graphQuery = materializer.materialize();
-            
-            File abox = Paths.get(aboxFile).toFile();
-            if (abox.exists()) {
-                outputCallback.accept("File " + abox.getAbsolutePath() + " already exists!");
-                outputCallback.accept("(the system will use the existing file, skipping the ABox materialization step)");
-            } else {
-                outputCallback.accept("File " + abox.getAbsolutePath() + " does not exist!");
-                outputCallback.accept("ABox materialization will start.");
-                
-                try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(abox, true)))) {
-                    outputCallback.accept("\nComputing ABox...");
-                    long start = System.currentTimeMillis();
-                    RDFWriter writer = new NTriplesWriter(out);
-                    graphQuery.evaluate(writer);
-                    
-                    long numberOfTriples = graphQuery.getTripleCountSoFar();
-                    long end = System.currentTimeMillis();
-                    float seconds = ((end - start) / 1000F);
-                    outputCallback.accept("Generated Abox with " + numberOfTriples + " triples in " + seconds + " seconds");
-                    abox = Paths.get(aboxFile).toFile();
-                }
-            }
-            
-            if (cancelled) {
-                repo.shutDown();
-                return;
-            }
-            
-            
-            // Retrieve Lambda
-            outputCallback.accept("\n===============");
-            outputCallback.accept("Retrieve Lambda");
-            outputCallback.accept("===============");
-            
-            List<List<String>> lambda = ui.getLambda(lambdaFile);
-            int lambdaSize = lambda.size();
-            outputCallback.accept("Lambda size: " + lambdaSize);
-            
-            if (cancelled) {
-                repo.shutDown();
-                return;
-            }
-            
-            
-            // Compute Variables
-            outputCallback.accept("\n=================");
-            outputCallback.accept("Compute Variables");
-            outputCallback.accept("=================");
-            outputCallback.accept("Computing existential variables...");
-            
-            long start = System.nanoTime();
-            HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
-            long end = System.nanoTime();
-            outputCallback.accept("Computed " + existentialVars.size() + " existential variables in " + 
-                                 (end - start) / 1_000_000_000.0 + " seconds");
-            
-            if (cancelled) {
-                repo.shutDown();
-                return;
-            }
-            
-            
-            // Compute Explanation
-            outputCallback.accept("\n==================");
-            outputCallback.accept("Compute Explanation");
-            outputCallback.accept("==================");
-            
-            long startExpl = System.nanoTime();
-            int count = 0;
-            
-            // Create output files
-            PrintStream fileOut = new PrintStream(new FileOutputStream(explFile));
-            PrintStream logOut = new PrintStream(new FileOutputStream(logFile));
-            
-            // Redirect log output to both file and callback
-            PrintStream dualLogStream = new PrintStream(new OutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    logOut.write(b);
-                    logStream.write(b);
-                }
-            });
-            
-            StringBuilder head = new StringBuilder("SELECT ");
-            for (int i = 0; i < lambda.get(0).size(); i++) {
-                String index = String.valueOf(i + 1);
-                head.append("?x").append(index).append(" ");
-            }
-            head.append("\nWHERE {\n");
-            
-            fileOut.println(head);
-            
-            for (List<String> tuple : lambda) {
-                if (cancelled) {
-                    break;
-                }
-                
-                long startTuple;
-                count++;
-                
-                outputCallback.accept("\n============ Processing tuple " + count + "/" + lambdaSize + ": " + tuple + " ============");
-                startTuple = System.nanoTime();
-                
-                start = System.nanoTime();
-                List<MembershipAssertion> border = ui.generateBorderN(tuple, abox, radius, dualLogStream);
-                end = System.nanoTime();
-                outputCallback.accept("Border computed in " + (end - start) / 1_000_000_000.0 + " seconds");
-                
-                start = System.nanoTime();
-                List<MembershipAssertion> disj = ui.replaceConstVar(tuple, border, existentialVars);
-                end = System.nanoTime();
-                outputCallback.accept("Disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
-                
-                start = System.nanoTime();
-                String query_sparql = ui.sparqlTranslate(disj, prefixList, pm);
-                end = System.nanoTime();
-                outputCallback.accept("SPARQL Query computed in " + (end - start) / 1_000_000_000.0 + " seconds");
-                
-                fileOut.println(query_sparql);
-                if (count < lambdaSize) {
-                    fileOut.println("\nUNION\n");
-                }
-                
-                long endTuple = System.nanoTime();
-                outputCallback.accept("Total time for tuple processing [" + 
-                                     (endTuple - startTuple) / 1_000_000_000.0 + " seconds]");
-                
-            }
-            
-            fileOut.println("\n}");
-            fileOut.close();
-            logOut.close();
-            
-            long endExpl = System.nanoTime();
-            long totElapsedTime = endExpl - startExpl;
-            
-            outputCallback.accept("\n============ END COMPUTATION ============");
-            if (totElapsedTime > 60_000_000_000L) {
-                outputCallback.accept("Explanation computed and printed to file (" + explFile + ").");
-                outputCallback.accept("Total time for computing the explanation [" + 
-                                     (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
-            } else {
-                outputCallback.accept("Explanation computed and printed to file (" + explFile + ").");
-                outputCallback.accept("Total time for computing the explanation [" + 
-                                     (totElapsedTime / 1_000_000_000.0) + " seconds]");
-            }
-            
-            repo.shutDown();
-            outputCallback.accept("\n===================");
-            outputCallback.accept("Connessione chiusa.");
-            outputCallback.accept("===================");
-            
+        } catch (InterruptedException e) {
+            // Computation was cancelled
+            outputCallback.accept("\n>>> Computation cancelled <<<");
+            throw e;
         } finally {
+            // Restore original System.out
             System.setOut(originalOut);
+            System.setErr(originalErr);
+            
+            // Make sure to stop the app in case it's still running
         }
     }
     
