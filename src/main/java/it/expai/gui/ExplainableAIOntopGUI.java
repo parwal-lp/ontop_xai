@@ -36,9 +36,21 @@ public class ExplainableAIOntopGUI extends Application {
         VBox topSection = createConfigurationSection();
         root.setTop(topSection);
 
+        // Status section
+        HBox statusSection = new HBox();
+        statusSection.setPadding(new Insets(10, 10, 5, 10));
+        statusLabel = new Label("Ready");
+        statusLabel.setStyle("-fx-font-size: 13px; -fx-font-weight: bold;");
+        statusSection.getChildren().add(statusLabel);
+
         // Center section - Output
         VBox centerSection = createOutputSection();
-        root.setCenter(centerSection);
+        
+        // Combine status and center in a VBox
+        VBox centerWithStatus = new VBox();
+        centerWithStatus.getChildren().addAll(centerSection, statusSection);
+        VBox.setVgrow(centerSection, Priority.ALWAYS);
+        root.setCenter(centerWithStatus);
 
         // Bottom section - Controls
         HBox bottomSection = createControlSection();
@@ -56,7 +68,7 @@ public class ExplainableAIOntopGUI extends Application {
 
     private VBox createConfigurationSection() {
         VBox section = new VBox(10);
-        section.setPadding(new Insets(10));
+        section.setPadding(new Insets(10, 10, 10, 10));
         section.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5;");
 
         Label titleLabel = new Label("Configuration");
@@ -121,7 +133,7 @@ public class ExplainableAIOntopGUI extends Application {
 
     private HBox createControlSection() {
         HBox section = new HBox(10);
-        section.setPadding(new Insets(10, 0, 0, 0));
+        section.setPadding(new Insets(10, 10, 10, 10));
         section.setAlignment(Pos.CENTER_LEFT);
 
         startButton = new Button("Compute Explanation");
@@ -143,14 +155,8 @@ public class ExplainableAIOntopGUI extends Application {
             statusLabel.setText("Ready");
         });
 
-        statusLabel = new Label("Ready");
-        statusLabel.setPrefWidth(300);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
         section.getChildren().addAll(
-            startButton, stopButton, clearButton, statusLabel
+            startButton, stopButton, clearButton
         );
 
         return section;
