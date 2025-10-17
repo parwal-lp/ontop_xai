@@ -25,34 +25,26 @@ import it.unibz.inf.ontop.spec.mapping.pp.SQLPPMapping;
 
 public class ExplainableAIOntop {
 
-    static UtilsImpl ui = new UtilsImpl();
+    private String owlFile;
+    private String mappingFile;
+    private String lambdaFile;
+    private String aboxFile;
+    private String logFile;
+    private String explFile;
 
-    static String owlFile;
-    //static String obdaFile;
-    static String mappingFile;
-    static String lambdaFile;
-    static String aboxFile;
-    static String logFile;
-    static String explFile;
-
-    static int radius = 1;
-
-	public static void main(String[] args)
-			throws Exception {
+    public void computeExplanation(String propertyFile, int radius) throws Exception {
 
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
-        
-        // String propertyFile = "src/main/resources/example/books/exampleBooks.properties";
-        String propertyFile = "src/main/resources/npd/npd.properties";
+
+        UtilsImpl ui = new UtilsImpl();
 
         Properties p = new Properties();
         FileInputStream propertyFileStream = new FileInputStream(propertyFile);
         p.load(propertyFileStream);
 
         owlFile = p.getProperty("owlFile");
-        //obdaFile = p.getProperty("obdaFile");
         mappingFile = p.getProperty("mappingFile");
         lambdaFile = p.getProperty("lambdaFile");
         aboxFile = p.getProperty("aboxFile");
@@ -66,13 +58,13 @@ public class ExplainableAIOntop {
         long start, end;
         float seconds;
 
+
         // ================
         // Connect to Ontop
         // ================
         System.out.println("\n===========================\nConnessione a Ontop e MySQL\n===========================");
         OntopSQLOWLAPIConfiguration configuration = OntopSQLOWLAPIConfiguration.defaultBuilder()
                 .ontologyFile(owlFile)
-                //.nativeOntopMappingFile(obdaFile)
                 .r2rmlMappingFile(mappingFile)
                 .propertyFile(propertyFile)
                 .enableTestMode()
@@ -86,6 +78,8 @@ public class ExplainableAIOntop {
         SQLPPMapping ppMapping = configuration.loadProvidedPPMapping();
         PrefixManager pm = ppMapping.getPrefixManager();
         String prefixList = ui.getPrefix(pm);
+
+
 
 
         //==================
@@ -118,7 +112,6 @@ public class ExplainableAIOntop {
                 abox = Paths.get(aboxFile).toFile();
 		    }
         }
-        
 
 
         // =========================
@@ -133,7 +126,6 @@ public class ExplainableAIOntop {
         System.out.println("Lambda size: " + lambdaSize);
 
 
-
         // =================
         // Compute Variables
         // =================
@@ -143,7 +135,6 @@ public class ExplainableAIOntop {
 		HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
         end = System.nanoTime();
         System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
-
 
         // ==================
         // Compute Exlanation
@@ -227,6 +218,22 @@ public class ExplainableAIOntop {
         repo.shutDown();
         System.out.println("\n===================\nConnessione chiusa.\n===================");
 		
+
+    }
+
+	public static void main(String[] args) throws Exception {
+
+        ExplainableAIOntop kg_xai = new ExplainableAIOntop();
+
+        String propertyFile = "src/main/resources/npd/npd.properties"; //da parametrizzare
+        //propertyFile = "src/main/resources/example/books/exampleBooks.properties";
+        int radius = 1; //da parametrizzare
+
+        kg_xai.computeExplanation(
+            propertyFile, 
+            radius
+        );
+
 	}
 
 }

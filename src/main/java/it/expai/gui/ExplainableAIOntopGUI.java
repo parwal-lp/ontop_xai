@@ -16,18 +16,17 @@ public class ExplainableAIOntopGUI extends Application {
 
     private TextField propertyFileField;
     private TextField radiusField;
-    private TextArea outputArea;
-    private TextArea logArea;
+    private TextArea detailsArea;
+    private TextArea explanationArea;
     private Button startButton;
     private Button stopButton;
-    private ProgressBar progressBar;
     private Label statusLabel;
     
     private ExplanationWorker currentWorker;
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("KG-XAI");
+        primaryStage.setTitle("KG-XAI tool");
 
         // Main layout
         BorderPane root = new BorderPane();
@@ -99,25 +98,25 @@ public class ExplainableAIOntopGUI extends Application {
         TabPane tabPane = new TabPane();
         VBox.setVgrow(tabPane, Priority.ALWAYS);
 
-        // Console output tab
-        Tab outputTab = new Tab("Console Output");
-        outputTab.setClosable(false);
-        outputArea = new TextArea();
-        outputArea.setEditable(false);
-        outputArea.setWrapText(true);
-        outputArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
-        outputTab.setContent(outputArea);
+        // Computation Details tab
+        Tab detailsTab = new Tab("Computation Details");
+        detailsTab.setClosable(false);
+        detailsArea = new TextArea();
+        detailsArea.setEditable(false);
+        detailsArea.setWrapText(true);
+        detailsArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
+        detailsTab.setContent(detailsArea);
 
-        // Log tab
-        Tab logTab = new Tab("Detailed Log");
-        logTab.setClosable(false);
-        logArea = new TextArea();
-        logArea.setEditable(false);
-        logArea.setWrapText(true);
-        logArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
-        logTab.setContent(logArea);
+        // Explanation tab
+        Tab explanationTab = new Tab("Explanation");
+        explanationTab.setClosable(false);
+        explanationArea = new TextArea();
+        explanationArea.setEditable(false);
+        explanationArea.setWrapText(true);
+        explanationArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
+        explanationTab.setContent(explanationArea);
 
-        tabPane.getTabs().addAll(outputTab, logTab);
+        tabPane.getTabs().addAll(detailsTab, explanationTab);
         section.getChildren().add(tabPane);
 
         return section;
@@ -128,9 +127,9 @@ public class ExplainableAIOntopGUI extends Application {
         section.setPadding(new Insets(10, 0, 0, 0));
         section.setAlignment(Pos.CENTER_LEFT);
 
-        startButton = new Button("Start Explanation");
+        startButton = new Button("Compute Explanation");
         startButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
-        startButton.setPrefWidth(150);
+        startButton.setPrefWidth(200);
         startButton.setOnAction(e -> startExplanation());
 
         stopButton = new Button("Stop");
@@ -142,14 +141,10 @@ public class ExplainableAIOntopGUI extends Application {
         Button clearButton = new Button("Clear Output");
         clearButton.setPrefWidth(120);
         clearButton.setOnAction(e -> {
-            outputArea.clear();
-            logArea.clear();
+            detailsArea.clear();
+            explanationArea.clear();
             statusLabel.setText("Ready");
-            progressBar.setProgress(0);
         });
-
-        progressBar = new ProgressBar(0);
-        progressBar.setPrefWidth(200);
 
         statusLabel = new Label("Ready");
         statusLabel.setPrefWidth(300);
@@ -159,7 +154,7 @@ public class ExplainableAIOntopGUI extends Application {
 
         section.getChildren().addAll(
             startButton, stopButton, clearButton, spacer, 
-            progressBar, statusLabel
+            statusLabel
         );
 
         return section;
@@ -209,9 +204,8 @@ public class ExplainableAIOntopGUI extends Application {
         }
 
         // Clear output
-        outputArea.clear();
-        logArea.clear();
-        progressBar.setProgress(0);
+        detailsArea.clear();
+        explanationArea.clear();
 
         // Disable start button, enable stop button
         startButton.setDisable(true);
@@ -220,19 +214,16 @@ public class ExplainableAIOntopGUI extends Application {
 
         // Create and start worker
         Consumer<String> outputCallback = message -> 
-            Platform.runLater(() -> outputArea.appendText(message + "\n"));
+            Platform.runLater(() -> detailsArea.appendText(message + "\n"));
         
         Consumer<String> logCallback = message -> 
-            Platform.runLater(() -> logArea.appendText(message + "\n"));
+            Platform.runLater(() -> explanationArea.appendText(message + "\n"));
         
-        Consumer<Double> progressCallback = progress -> 
-            Platform.runLater(() -> progressBar.setProgress(progress));
         
         Runnable onComplete = () -> Platform.runLater(() -> {
             startButton.setDisable(false);
             stopButton.setDisable(true);
             statusLabel.setText("Completed");
-            progressBar.setProgress(1.0);
         });
         
         Runnable onError = () -> Platform.runLater(() -> {
@@ -249,7 +240,7 @@ public class ExplainableAIOntopGUI extends Application {
 
         currentWorker = new ExplanationWorker(
             propertyFile, radius, outputCallback, logCallback, 
-            progressCallback, onComplete, onError, onCancelled
+            onComplete, onError, onCancelled
         );
         
         new Thread(currentWorker).start();
@@ -258,7 +249,7 @@ public class ExplainableAIOntopGUI extends Application {
     private void stopExplanation() {
         if (currentWorker != null && currentWorker.isRunning()) {
             currentWorker.cancel();
-            outputArea.appendText("\n[Cancellation requested...]\n");
+            detailsArea.appendText("\n[Cancellation requested...]\n");
         }
     }
 

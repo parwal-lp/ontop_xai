@@ -19,17 +19,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Consumer;
 
-/**
- * Background worker for running the explanation computation.
- * Runs in a separate thread and provides callbacks for UI updates.
- */
+
 public class ExplanationWorker implements Runnable {
     
     private final String propertyFile;
     private final int radius;
     private final Consumer<String> outputCallback;
     private final Consumer<String> logCallback;
-    private final Consumer<Double> progressCallback;
     private final Runnable onComplete;
     private final Runnable onError;
     private final Runnable onCancelled;
@@ -40,7 +36,6 @@ public class ExplanationWorker implements Runnable {
     public ExplanationWorker(String propertyFile, int radius,
                             Consumer<String> outputCallback,
                             Consumer<String> logCallback,
-                            Consumer<Double> progressCallback,
                             Runnable onComplete,
                             Runnable onError,
                             Runnable onCancelled) {
@@ -48,7 +43,6 @@ public class ExplanationWorker implements Runnable {
         this.radius = radius;
         this.outputCallback = outputCallback;
         this.logCallback = logCallback;
-        this.progressCallback = progressCallback;
         this.onComplete = onComplete;
         this.onError = onError;
         this.onCancelled = onCancelled;
@@ -166,7 +160,6 @@ public class ExplanationWorker implements Runnable {
                 return;
             }
             
-            progressCallback.accept(0.1);
             
             // Retrieve ABox
             outputCallback.accept("\n=================");
@@ -204,7 +197,6 @@ public class ExplanationWorker implements Runnable {
                 return;
             }
             
-            progressCallback.accept(0.2);
             
             // Retrieve Lambda
             outputCallback.accept("\n===============");
@@ -220,7 +212,6 @@ public class ExplanationWorker implements Runnable {
                 return;
             }
             
-            progressCallback.accept(0.25);
             
             // Compute Variables
             outputCallback.accept("\n=================");
@@ -239,7 +230,6 @@ public class ExplanationWorker implements Runnable {
                 return;
             }
             
-            progressCallback.accept(0.3);
             
             // Compute Explanation
             outputCallback.accept("\n==================");
@@ -306,9 +296,6 @@ public class ExplanationWorker implements Runnable {
                 outputCallback.accept("Total time for tuple processing [" + 
                                      (endTuple - startTuple) / 1_000_000_000.0 + " seconds]");
                 
-                // Update progress
-                double progress = 0.3 + (0.7 * count / lambdaSize);
-                progressCallback.accept(progress);
             }
             
             fileOut.println("\n}");
