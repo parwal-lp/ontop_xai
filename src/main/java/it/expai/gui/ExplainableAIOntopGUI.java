@@ -50,9 +50,6 @@ public class ExplainableAIOntopGUI extends Application {
         
         // Handle window close
         primaryStage.setOnCloseRequest(event -> {
-            if (currentWorker != null && currentWorker.isRunning()) {
-                currentWorker.cancel();
-            }
             Platform.exit();
         });
     }
@@ -136,7 +133,7 @@ public class ExplainableAIOntopGUI extends Application {
         stopButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold;");
         stopButton.setPrefWidth(100);
         stopButton.setDisable(true);
-        stopButton.setOnAction(e -> stopExplanation());
+        //stopButton.setOnAction(e -> stopExplanation());
 
         Button clearButton = new Button("Clear Output");
         clearButton.setPrefWidth(120);
@@ -153,8 +150,7 @@ public class ExplainableAIOntopGUI extends Application {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         section.getChildren().addAll(
-            startButton, stopButton, clearButton, spacer, 
-            statusLabel
+            startButton, stopButton, clearButton, statusLabel
         );
 
         return section;
@@ -231,26 +227,13 @@ public class ExplainableAIOntopGUI extends Application {
             stopButton.setDisable(true);
             statusLabel.setText("Error occurred");
         });
-        
-        Runnable onCancelled = () -> Platform.runLater(() -> {
-            startButton.setDisable(false);
-            stopButton.setDisable(true);
-            statusLabel.setText("Cancelled");
-        });
 
         currentWorker = new ExplanationWorker(
             propertyFile, radius, outputCallback, logCallback, 
-            onComplete, onError, onCancelled
+            onComplete, onError
         );
         
         new Thread(currentWorker).start();
-    }
-
-    private void stopExplanation() {
-        if (currentWorker != null && currentWorker.isRunning()) {
-            currentWorker.cancel();
-            detailsArea.appendText("\n[Cancellation requested...]\n");
-        }
     }
 
     private void showAlert(String title, String message) {

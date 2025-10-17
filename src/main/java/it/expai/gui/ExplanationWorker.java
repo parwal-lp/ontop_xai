@@ -18,33 +18,27 @@ public class ExplanationWorker implements Runnable {
     private final Consumer<String> logCallback;
     private final Runnable onComplete;
     private final Runnable onError;
-    private final Runnable onCancelled;
     
     private volatile boolean running = false;
-    private ExplainableAIOntop app; // Keep reference to app instance
+    private ExplainableAIOntop app; // Instance of the main computation class
     
     public ExplanationWorker(String propertyFile, int radius,
                             Consumer<String> outputCallback,
                             Consumer<String> logCallback,
                             Runnable onComplete,
-                            Runnable onError,
-                            Runnable onCancelled) {
+                            Runnable onError) {
         this.propertyFile = propertyFile;
         this.radius = radius;
         this.outputCallback = outputCallback;
         this.logCallback = logCallback;
         this.onComplete = onComplete;
         this.onError = onError;
-        this.onCancelled = onCancelled;
     }
     
     public boolean isRunning() {
         return running;
     }
     
-    public void cancel() {
-        // Also tell the app instance to stop if it exists
-    }
     
     @Override
     public void run() {
@@ -52,16 +46,7 @@ public class ExplanationWorker implements Runnable {
         
         try {
             runExplanation();
-            
-            if (Thread.currentThread().isInterrupted()) {
-                onCancelled.run();
-            } else {
-                onComplete.run();
-            }
-        } catch (InterruptedException e) {
-            // Thread was interrupted - treat as cancellation
-            outputCallback.accept("Computation interrupted");
-            onCancelled.run();
+            onComplete.run();
         } catch (Exception e) {
             e.printStackTrace();
             outputCallback.accept("ERROR: " + e.getMessage());
@@ -83,6 +68,7 @@ public class ExplanationWorker implements Runnable {
             
             @Override
             public void write(int b) throws IOException {
+                
                 if (b == '\n') {
                     outputCallback.accept(buffer.toString());
                     buffer.setLength(0);
@@ -103,17 +89,10 @@ public class ExplanationWorker implements Runnable {
             // Call the computation method
             // The output will be captured by our redirected System.out
             app.computeExplanation(propertyFile, radius);
-            
-        } catch (InterruptedException e) {
-            // Computation was cancelled
-            outputCallback.accept("\n>>> Computation cancelled <<<");
-            throw e;
         } finally {
             // Restore original System.out
             System.setOut(originalOut);
             System.setErr(originalErr);
-            
-            // Make sure to stop the app in case it's still running
         }
     }
     
