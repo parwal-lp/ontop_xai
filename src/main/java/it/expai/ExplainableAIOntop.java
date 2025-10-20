@@ -243,7 +243,7 @@ public class ExplainableAIOntop {
         
         repo.shutDown();
         System.out.println("\n===================\nConnessione chiusa.\n===================");
-		return 0;
+		return 1;
 
     }
 

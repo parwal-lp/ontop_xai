@@ -222,6 +222,7 @@ public class ExplainableAIOntopGUI extends Application {
             startButton.setDisable(false);
             stopButton.setDisable(true);
             statusLabel.setText("Completed");
+            askForRadiusExpansion(radius);
         });
         
         Runnable onError = () -> Platform.runLater(() -> {
@@ -265,5 +266,46 @@ public class ExplainableAIOntopGUI extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+
+    private void askForRadiusExpansion(int currentRadius) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Expand Radius");
+        alert.setHeaderText("Computation completed for radius " + currentRadius);
+        alert.setContentText("Would you like to compute the explanation with a different radius?");
+        
+        ButtonType yesButton = new ButtonType("Yes, change the radius");
+        ButtonType noButton = new ButtonType("No, I'm done", ButtonBar.ButtonData.CANCEL_CLOSE);
+        
+        alert.getButtonTypes().setAll(yesButton, noButton);
+        
+        alert.showAndWait().ifPresent(response -> {
+            if (response == yesButton) {
+                showRadiusInputDialog(currentRadius);
+            }
+        });
+    }
+
+    private void showRadiusInputDialog(int currentRadius) {
+        TextInputDialog dialog = new TextInputDialog(String.valueOf(currentRadius + 1));
+        dialog.setTitle("New Radius");
+        dialog.setHeaderText("Enter new radius");
+        dialog.setContentText("(Old radius:" + currentRadius + "):");
+        
+        dialog.showAndWait().ifPresent(input -> {
+            try {
+                int newRadius = Integer.parseInt(input.trim());
+                                
+                // Aggiorna il campo radius e riavvia
+                radiusField.setText(String.valueOf(newRadius));
+                startExplanation();
+                
+            } catch (NumberFormatException e) {
+                showAlert("Invalid Input", "Please enter a valid integer");
+                // Riprova
+                showRadiusInputDialog(currentRadius);
+            }
+        });
     }
 }
