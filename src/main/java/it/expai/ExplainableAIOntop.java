@@ -10,9 +10,11 @@ import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.eclipse.rdf4j.repository.Repository;
@@ -37,12 +39,14 @@ public class ExplainableAIOntop {
     private String explFile;
     private boolean stopFlag = false;
 
+    private List<Border> borders = new LinkedList<>();
+
     public void stop() {
         System.out.println("\nStopping the computation...\n");
         stopFlag = true;
     }
 
-    public int computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
+    public int run(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
@@ -158,14 +162,26 @@ public class ExplainableAIOntop {
 		HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
         end = System.nanoTime();
         if (!stopFlag) System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
+        
+        int esito = computeExplanation(lambda, radius, fileOut, logOut, abox, existentialVars, pm, prefixList);
 
-        // ==================
-        // Compute Exlanation
-        // ==================
+        repo.shutDown();
+        System.out.println("\n===================\nConnessione chiusa.\n===================");
+
+        return esito;
+    }
+
+    public int computeExplanation(List<List<String>> lambda, int radius, PrintStream fileOut, PrintStream logOut, File abox, HashMap<String, Integer> existentialVars, PrefixManager pm, String prefixList) throws Exception {
+        // ===================
+        // Compute Explanation
+        // ===================
         if (stopFlag) return -1;
-        System.out.println("\n===================\nCompute Explanation\n===================");
+        System.out.println("\n================================\nCompute Explanation for radius " + radius + "\n================================");
         long startExpl = System.nanoTime();
         int count = 0;
+        int lambdaSize = lambda.size();
+        UtilsImpl ui = new UtilsImpl();
+        Border borderN;
 		
         
         StringBuilder head = new StringBuilder("SELECT ");
@@ -177,18 +193,16 @@ public class ExplainableAIOntop {
 
         fileOut.println(head.toString());
 
-        List<MembershipAssertion> border;
-
         for (List<String> tuple : lambda) {
             if (stopFlag) return -1;
-            long startTuple, endTuple;
+            long startTuple, endTuple, start, end;
             count++;
 
             System.out.println("\n============ Processing tuple "+count +"/"+lambdaSize+": "+tuple+" ============");
             startTuple = System.nanoTime();
 
             start = System.nanoTime();
-			border = ui.generateBorderN(tuple, abox, radius, logOut);
+			borderN = ui.generateBorderN(tuple, abox, radius, logOut, borders);
             end = System.nanoTime();
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
@@ -197,7 +211,8 @@ public class ExplainableAIOntop {
 
 
             start = System.nanoTime();
-			List<MembershipAssertion> disj = ui.replaceConstVar(tuple, border, existentialVars);
+            Set<MembershipAssertion> borderAssertions = borderN.getAssertions();
+			List<MembershipAssertion> disj = ui.replaceConstVar(tuple, borderAssertions, existentialVars);
             end = System.nanoTime();
             if (!stopFlag) System.out.println("Disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
             
@@ -241,8 +256,7 @@ public class ExplainableAIOntop {
         logOut.close();
 
         
-        repo.shutDown();
-        System.out.println("\n===================\nConnessione chiusa.\n===================");
+        
 		return 1;
 
     }
@@ -284,7 +298,7 @@ public class ExplainableAIOntop {
         }while(validPropertiesFile==false);//loops until valid
         scan.close();
         
-        kg_xai.computeExplanation(
+        kg_xai.run(
             propertyFile, 
             radius,
             null

@@ -145,21 +145,42 @@ public class UtilsImpl implements IUtils {
 
 
 	@Override
-    public List<MembershipAssertion> generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut) throws IOException {
-    	Set<String> allFoundTerms = new HashSet<>(tuple);
+    public Border generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut, List<Border> borders) throws IOException {
+
+		// Se il border per questo raggio è già in cache, ritornalo direttamente
+		for (Border b : borders) {
+			if (b.getRadius() == radius) {
+				logOut.println(">>> Using cached border for radius " + radius);
+				return b;
+			}
+		}
+
+
+		//parametri iniziali di default
+		int currentRadius = -1;
+		Set<String> allFoundTerms = new HashSet<>(tuple);
     	Set<MembershipAssertion> disjunct = new HashSet<>();
-		
+
+		//se trovo qualcosa in borders, sovrascrivi i parametri di default con ciò che già è stato calcolato
+		if (!borders.isEmpty()) {
+			for (Border b : borders) {
+				if (b.getRadius() >= currentRadius) {
+					currentRadius = b.getRadius();
+					allFoundTerms = b.getTerms();
+					disjunct = b.getAssertions();
+				}
+			}
+		}
+
 		// traccia le assertions trovate e aggiunte usando una chiave custom stringa
 		// serve perché l'oggetto assertion viene creato appena prima di aggiungerlo a disjunct
 		// e quindi controllando l'hash non verrebbe mai trovata dentro il set disjunct, perché ogni volta ha un hash nuovo quello appena creato
 		//diverso da quelli inserito prima
 		Set<String> addedAssertionKeys = new HashSet<>();
 
-
-
-		int currentRadius = 0;
-		while (currentRadius <= radius) {
-			Set<String> newTerms = new HashSet<>(); //qui vado a mettere quelli nuovi che serviranno al prossimo raggio
+		while (currentRadius < radius) {
+			radius++; //ora calcolo questo raggio
+			Set<String> newTerms = new HashSet<>(); //qui vado a mettere quelli nuovi che trovo in questo nuovo raggio, e che serviranno al prossimo raggio
 			
 			FileReader fr = new FileReader(abox);
 			BufferedReader br = new BufferedReader(fr);
@@ -208,14 +229,15 @@ public class UtilsImpl implements IUtils {
 			logOut.println("disjunct size at radius "+currentRadius+": "+disjunct.size());
 
 			allFoundTerms.addAll(newTerms);
-			currentRadius++;
+
+			borders.add(new Border(currentRadius, disjunct, allFoundTerms));
 
 		}
-        return new LinkedList<MembershipAssertion>(disjunct);
+        return borders.get(borders.size()-1);
     }
 
 	@Override
-	public List<MembershipAssertion> replaceConstVar(List<String> tuple, List<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException{
+	public List<MembershipAssertion> replaceConstVar(List<String> tuple, Set<MembershipAssertion> borderAssertions, HashMap<String, Integer> existentialVars) throws IOException{
 		List<MembershipAssertion> query = new LinkedList<MembershipAssertion>();
 		Map<String, Integer> dictionary = new HashMap<String, Integer>();
 		int x_counter = 1, y_counter = 1;
@@ -226,7 +248,7 @@ public class UtilsImpl implements IUtils {
 
 		Set<String> tupleSet = new HashSet<String>(tuple);
 
-		for (MembershipAssertion assertion : border){
+		for (MembershipAssertion assertion : borderAssertions){
 			if(assertion instanceof Concept) {
 				Concept mac = (Concept)assertion;
 				String term = mac.getConceptTerm();

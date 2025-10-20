@@ -83,7 +83,7 @@ public class ExplanationWorker implements Runnable {
         app = new ExplainableAIOntop();
         
         try {
-            ret = app.computeExplanation(propertyFile, radius, explCallback);
+            ret = app.run(propertyFile, radius, explCallback);
         } finally {
             System.setOut(originalOut);
             System.setErr(originalErr);

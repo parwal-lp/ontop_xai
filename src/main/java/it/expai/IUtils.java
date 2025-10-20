@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import com.opencsv.exceptions.CsvValidationException;
 
@@ -107,10 +108,11 @@ public interface IUtils {
 	 * @param abox abox file materialization
 	 * @param radius radius n
 	 * @param logOut print stream del file utilizzato per stampare i log per scopi di debug
+	 * @param borders lista di dizionari che mappano ogni raggio con il corrispondente elenco di assertions (il suo bordo)
 	 * @return the border with radius n of the given tuple
 	 * @throws IOException 
 	 */
-    List<MembershipAssertion> generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut) throws IOException;
+    Border generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut, List<Border> borders) throws IOException;
 
 
 	/**
@@ -120,7 +122,7 @@ public interface IUtils {
 	 * @return the CQ disjunct with variables corresponding to the given border
 	 * @throws IOException
 	 */
-	List<MembershipAssertion> replaceConstVar(List<String> tuple, List<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException;
+	List<MembershipAssertion> replaceConstVar(List<String> tuple, Set<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException;
 
 
 
