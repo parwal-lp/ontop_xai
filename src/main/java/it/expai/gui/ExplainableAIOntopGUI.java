@@ -218,8 +218,8 @@ public class ExplainableAIOntopGUI extends Application {
         Consumer<String> outputCallback = message -> 
             Platform.runLater(() -> detailsArea.appendText(message + "\n"));
         
-        Consumer<String> logCallback = message -> 
-            Platform.runLater(() -> explanationArea.appendText(message + "\n"));
+        Consumer<String> explCallback = message -> 
+            Platform.runLater(() -> explanationArea.appendText(message));
         
         
         Runnable onComplete = () -> Platform.runLater(() -> {
@@ -235,7 +235,7 @@ public class ExplainableAIOntopGUI extends Application {
         });
 
         currentWorker = new ExplanationWorker(
-            propertyFile, radius, outputCallback, logCallback, 
+            propertyFile, radius, outputCallback, explCallback, 
             onComplete, onError
         );
         

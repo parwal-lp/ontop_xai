@@ -10,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.rio.RDFWriter;
@@ -32,7 +33,7 @@ public class ExplainableAIOntop {
     private String logFile;
     private String explFile;
 
-    public void computeExplanation(String propertyFile, int radius) throws Exception {
+    public void computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
 
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
@@ -53,7 +54,18 @@ public class ExplainableAIOntop {
 
         propertyFileStream.close();
 
-        PrintStream fileOut = new PrintStream(new FileOutputStream(explFile));
+        //PrintStream fileOut = new PrintStream(new FileOutputStream(explFile));
+        PrintStream fileOut = new PrintStream(new FileOutputStream(explFile)) {
+            @Override
+            public void println(String x) {
+                super.println(x);
+                if (explCallback != null) {
+                    explCallback.accept(x + "\n");
+                }
+            }
+        };
+
+
         PrintStream logOut = new PrintStream(new FileOutputStream(logFile));
         long start, end;
         float seconds;
@@ -139,7 +151,7 @@ public class ExplainableAIOntop {
         // ==================
         // Compute Exlanation
         // ==================
-        System.out.println("\n==================\nCompute Exlanation\n==================");
+        System.out.println("\n===================\nCompute Explanation\n===================");
         long startExpl = System.nanoTime();
         int count = 0;
 		
@@ -151,7 +163,7 @@ public class ExplainableAIOntop {
         }
         head.append("\nWHERE {\n");
 
-        fileOut.println(head);
+        fileOut.println(head.toString());
 
         for (List<String> tuple : lambda) {
             long startTuple, endTuple;
@@ -231,7 +243,8 @@ public class ExplainableAIOntop {
 
         kg_xai.computeExplanation(
             propertyFile, 
-            radius
+            radius,
+            null
         );
 
 	}

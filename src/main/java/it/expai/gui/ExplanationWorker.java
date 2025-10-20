@@ -15,7 +15,7 @@ public class ExplanationWorker implements Runnable {
     private final String propertyFile;
     private final int radius;
     private final Consumer<String> outputCallback;
-    private final Consumer<String> logCallback;
+    private final Consumer<String> explCallback;
     private final Runnable onComplete;
     private final Runnable onError;
     
@@ -24,13 +24,13 @@ public class ExplanationWorker implements Runnable {
     
     public ExplanationWorker(String propertyFile, int radius,
                             Consumer<String> outputCallback,
-                            Consumer<String> logCallback,
+                            Consumer<String> explCallback,
                             Runnable onComplete,
                             Runnable onError) {
         this.propertyFile = propertyFile;
         this.radius = radius;
         this.outputCallback = outputCallback;
-        this.logCallback = logCallback;
+        this.explCallback = explCallback;
         this.onComplete = onComplete;
         this.onError = onError;
     }
@@ -50,7 +50,6 @@ public class ExplanationWorker implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
             outputCallback.accept("ERROR: " + e.getMessage());
-            logCallback.accept("Exception occurred:\n" + getStackTrace(e));
             onError.run();
         } finally {
             running = false;
@@ -88,7 +87,7 @@ public class ExplanationWorker implements Runnable {
         try {
             // Call the computation method
             // The output will be captured by our redirected System.out
-            app.computeExplanation(propertyFile, radius);
+            app.computeExplanation(propertyFile, radius, explCallback);
         } finally {
             // Restore original System.out
             System.setOut(originalOut);
@@ -96,10 +95,5 @@ public class ExplanationWorker implements Runnable {
         }
     }
     
-    private String getStackTrace(Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-        return sw.toString();
-    }
+
 }
