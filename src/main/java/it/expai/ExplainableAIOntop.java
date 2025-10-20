@@ -32,8 +32,14 @@ public class ExplainableAIOntop {
     private String aboxFile;
     private String logFile;
     private String explFile;
+    private boolean stopFlag = false;
 
-    public void computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
+    public void stop() {
+        System.out.println("\nStopping the computation...\n");
+        stopFlag = true;
+    }
+
+    public int computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
 
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
@@ -74,6 +80,7 @@ public class ExplainableAIOntop {
         // ================
         // Connect to Ontop
         // ================
+        if (stopFlag) return -1;
         System.out.println("\n===========================\nConnessione a Ontop e MySQL\n===========================");
         OntopSQLOWLAPIConfiguration configuration = OntopSQLOWLAPIConfiguration.defaultBuilder()
                 .ontologyFile(owlFile)
@@ -85,7 +92,7 @@ public class ExplainableAIOntop {
 		Repository repo = OntopRepository.defaultRepository(configuration);
         repo.init();
         repo.getConnection();
-        System.out.println("Connessione avvenuta con successo!");
+        if (!stopFlag) System.out.println("Connessione avvenuta con successo!");
 
         SQLPPMapping ppMapping = configuration.loadProvidedPPMapping();
         PrefixManager pm = ppMapping.getPrefixManager();
@@ -97,6 +104,7 @@ public class ExplainableAIOntop {
         //==================
         // Retrieve the ABox
         //==================
+        if (stopFlag) return -1;
         System.out.println("\n=================\nRetrieve the ABox\n=================");
         MaterializationParams materializationParams = MaterializationParams.defaultBuilder().build();
         RDF4JMaterializer materializer = RDF4JMaterializer.defaultMaterializer(configuration, materializationParams);
@@ -104,15 +112,15 @@ public class ExplainableAIOntop {
 
 		File abox = Paths.get(aboxFile).toFile();
 		if (abox.exists()) {
-            System.out.println("File " + abox.getAbsolutePath() + " already exists!\n(the system will use the existing file, skipping the ABox materialization step)");
+            if (!stopFlag) System.out.println("File " + abox.getAbsolutePath() + " already exists!\n(the system will use the existing file, skipping the ABox materialization step)");
 
             // System.out.println("\nLoading existing ABox from file...");
 			// membershipAssertions = ui.loadABoxFromFile(aboxFile, membershipAssertions, pm);
 			
 		} else {
-            System.out.println("File " + abox.getAbsolutePath() + " does not exist!\nABox materialization will start.");
+            if (!stopFlag) System.out.println("File " + abox.getAbsolutePath() + " does not exist!\nABox materialization will start.");
             try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(abox, true)))) {
-                System.out.println("\nComputing ABox...");
+                if (!stopFlag) System.out.println("\nComputing ABox...");
                 start = System.currentTimeMillis();
                 RDFWriter writer = new NTriplesWriter(out);
                 graphQuery.evaluate(writer);
@@ -120,7 +128,7 @@ public class ExplainableAIOntop {
                 long numberOfTriples = graphQuery.getTripleCountSoFar();
                 end = System.currentTimeMillis();
                 seconds=((end - start)/1000F);
-                System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
+                if (!stopFlag) System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
                 abox = Paths.get(aboxFile).toFile();
 		    }
         }
@@ -129,28 +137,31 @@ public class ExplainableAIOntop {
         // =========================
         // Retrieve Lambda from file
         // =========================
+        if (stopFlag) return -1;
 		System.out.println("\n===============\nRetrieve Lambda\n===============");
         List<List<String>> lambda = ui.getLambda(lambdaFile);
 		// for (List<String> tuple : lambda) {
 		// 	System.out.println(tuple);
 		// }
         int lambdaSize = lambda.size();
-        System.out.println("Lambda size: " + lambdaSize);
+        if (!stopFlag) System.out.println("Lambda size: " + lambdaSize);
 
 
         // =================
         // Compute Variables
         // =================
+        if (stopFlag) return -1;
         System.out.println("\n=================\nCompute Variables\n=================");
-        System.out.println("Computing existential variables...");
+        if (!stopFlag) System.out.println("Computing existential variables...");
         start = System.nanoTime();
 		HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
         end = System.nanoTime();
-        System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
+        if (!stopFlag) System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
 
         // ==================
         // Compute Exlanation
         // ==================
+        if (stopFlag) return -1;
         System.out.println("\n===================\nCompute Explanation\n===================");
         long startExpl = System.nanoTime();
         int count = 0;
@@ -166,6 +177,7 @@ public class ExplainableAIOntop {
         fileOut.println(head.toString());
 
         for (List<String> tuple : lambda) {
+            if (stopFlag) return -1;
             long startTuple, endTuple;
             count++;
 
@@ -177,27 +189,27 @@ public class ExplainableAIOntop {
             end = System.nanoTime();
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
-            System.out.println("Border computed in " + (end - start) / 1_000_000_000.0 + " seconds");
+            if (!stopFlag) System.out.println("Border computed in " + (end - start) / 1_000_000_000.0 + " seconds");
 
 
 
             start = System.nanoTime();
 			List<MembershipAssertion> disj = ui.replaceConstVar(tuple, border, existentialVars);
             end = System.nanoTime();
-            System.out.println("Disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
+            if (!stopFlag) System.out.println("Disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
             
 
             start = System.nanoTime();
 			String query_sparql = ui.sparqlTranslate(disj, prefixList, pm);
             end = System.nanoTime();
-            System.out.println("SPARQL Query computed in " + (end - start) / 1_000_000_000.0 + " seconds");
+            if (!stopFlag) System.out.println("SPARQL Query computed in " + (end - start) / 1_000_000_000.0 + " seconds");
             
             fileOut.println(query_sparql);
             if (count < lambdaSize) {
                 fileOut.println("\nUNION\n");
             }
             endTuple = System.nanoTime();
-            System.out.println("Total time for tuple processing [" + (endTuple - startTuple) / 1_000_000_000.0 + " seconds]");
+            if (!stopFlag) System.out.println("Total time for tuple processing [" + (endTuple - startTuple) / 1_000_000_000.0 + " seconds]");
 		}
         fileOut.println("\n}");
 
@@ -205,9 +217,9 @@ public class ExplainableAIOntop {
         long totElapsedTime = endExpl - startExpl;
         System.out.println("\n============ END COMPUTATION ============");
         if (totElapsedTime > 60_000_000_000L)
-            System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
+            if (!stopFlag) System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
         else
-            System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
+            if (!stopFlag) System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
 
 
         // =======================
@@ -229,7 +241,7 @@ public class ExplainableAIOntop {
         
         repo.shutDown();
         System.out.println("\n===================\nConnessione chiusa.\n===================");
-		
+		return 0;
 
     }
 

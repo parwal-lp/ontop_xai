@@ -20,6 +20,7 @@ public class ExplainableAIOntopGUI extends Application {
     private TextArea explanationArea;
     private Button startButton;
     private Button stopButton;
+    private Button clearButton;
     private Label statusLabel;
     
     private ExplanationWorker currentWorker;
@@ -145,9 +146,9 @@ public class ExplainableAIOntopGUI extends Application {
         stopButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold;");
         stopButton.setPrefWidth(100);
         stopButton.setDisable(true);
-        //stopButton.setOnAction(e -> stopExplanation());
+        stopButton.setOnAction(e -> stopExplanation());
 
-        Button clearButton = new Button("Clear Output");
+        clearButton = new Button("Clear Output");
         clearButton.setPrefWidth(120);
         clearButton.setOnAction(e -> {
             detailsArea.clear();
@@ -234,12 +235,29 @@ public class ExplainableAIOntopGUI extends Application {
             statusLabel.setText("Error occurred");
         });
 
+        Runnable onStopped = () -> Platform.runLater(() -> {
+            startButton.setDisable(false);
+            stopButton.setDisable(true);
+            detailsArea.appendText("\nComputation Stopped by User.");
+            statusLabel.setText("Stopped");
+        });
+
         currentWorker = new ExplanationWorker(
             propertyFile, radius, outputCallback, explCallback, 
-            onComplete, onError
+            onComplete, onError, onStopped
         );
         
         new Thread(currentWorker).start();
+    }
+
+    public void stopExplanation() {
+        if (currentWorker != null) {
+            currentWorker.stopExplanation();
+            startButton.setDisable(true);
+            stopButton.setDisable(true);
+            clearButton.setDisable(true);
+            statusLabel.setText("Stopping...");
+        }
     }
 
     private void showAlert(String title, String message) {

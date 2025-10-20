@@ -18,6 +18,7 @@ public class ExplanationWorker implements Runnable {
     private final Consumer<String> explCallback;
     private final Runnable onComplete;
     private final Runnable onError;
+    private final Runnable onStopped;
     
     private volatile boolean running = false;
     private ExplainableAIOntop app; // Instance of the main computation class
@@ -26,13 +27,15 @@ public class ExplanationWorker implements Runnable {
                             Consumer<String> outputCallback,
                             Consumer<String> explCallback,
                             Runnable onComplete,
-                            Runnable onError) {
+                            Runnable onError,
+                            Runnable onStopped) {
         this.propertyFile = propertyFile;
         this.radius = radius;
         this.outputCallback = outputCallback;
         this.explCallback = explCallback;
         this.onComplete = onComplete;
         this.onError = onError;
+        this.onStopped = onStopped;
     }
     
     public boolean isRunning() {
@@ -45,8 +48,10 @@ public class ExplanationWorker implements Runnable {
         running = true;
         
         try {
-            runExplanation();
-            onComplete.run();
+            int ret = runExplanation();
+            if (ret == 1) onComplete.run();
+            else if (ret == -1) onStopped.run();
+            else onError.run();
         } catch (Exception e) {
             e.printStackTrace();
             outputCallback.accept("ERROR: " + e.getMessage());
@@ -56,10 +61,12 @@ public class ExplanationWorker implements Runnable {
         }
     }
     
-    private void runExplanation() throws Exception {
+    private int runExplanation() throws Exception {
         // Redirect System.out to capture output for GUI
         PrintStream originalOut = System.out;
         PrintStream originalErr = System.err;
+
+        int ret;
         
         // Create custom PrintStream that forwards to callbacks
         PrintStream outputStream = new PrintStream(new OutputStream() {
@@ -87,11 +94,18 @@ public class ExplanationWorker implements Runnable {
         try {
             // Call the computation method
             // The output will be captured by our redirected System.out
-            app.computeExplanation(propertyFile, radius, explCallback);
+            ret = app.computeExplanation(propertyFile, radius, explCallback);
         } finally {
             // Restore original System.out
             System.setOut(originalOut);
             System.setErr(originalErr);
+        }
+        return ret;
+    }
+
+    public void stopExplanation() {
+        if (app != null) {
+            app.stop();
         }
     }
     
