@@ -4,12 +4,6 @@ import it.expai.*;
 import java.io.*;
 import java.util.function.Consumer;
 
-/**
- * Background worker for running the explanation computation.
- * Runs in a separate thread and provides callbacks for UI updates.
- * This is a thin wrapper that redirects output to the GUI and calls
- * the main computation logic from ExplainableAIOntop.
- */
 public class ExplanationWorker implements Runnable {
     
     private final String propertyFile;
@@ -21,7 +15,7 @@ public class ExplanationWorker implements Runnable {
     private final Runnable onStopped;
     
     private volatile boolean running = false;
-    private ExplainableAIOntop app; // Instance of the main computation class
+    private ExplainableAIOntop app;
     
     public ExplanationWorker(String propertyFile, int radius,
                             Consumer<String> outputCallback,
@@ -62,13 +56,11 @@ public class ExplanationWorker implements Runnable {
     }
     
     private int runExplanation() throws Exception {
-        // Redirect System.out to capture output for GUI
         PrintStream originalOut = System.out;
         PrintStream originalErr = System.err;
 
         int ret;
         
-        // Create custom PrintStream that forwards to callbacks
         PrintStream outputStream = new PrintStream(new OutputStream() {
             private StringBuilder buffer = new StringBuilder();
             
@@ -84,19 +76,15 @@ public class ExplanationWorker implements Runnable {
             }
         }, true);
         
-        // Redirect System.out to our custom stream
+        
         System.setOut(outputStream);
         System.setErr(outputStream);
         
-        // Create an ExplainableAIOntop instance and keep reference
         app = new ExplainableAIOntop();
         
         try {
-            // Call the computation method
-            // The output will be captured by our redirected System.out
             ret = app.computeExplanation(propertyFile, radius, explCallback);
         } finally {
-            // Restore original System.out
             System.setOut(originalOut);
             System.setErr(originalErr);
         }

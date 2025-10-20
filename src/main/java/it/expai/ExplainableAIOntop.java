@@ -3,13 +3,16 @@ package it.expai;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Properties;
+import java.util.Scanner;
 import java.util.function.Consumer;
 
 import org.eclipse.rdf4j.repository.Repository;
@@ -40,6 +43,7 @@ public class ExplainableAIOntop {
     }
 
     public int computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
+        System.out.println("calcolo la spiegazione con properties "+propertyFile+" e raggio "+radius);
 
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
@@ -60,7 +64,6 @@ public class ExplainableAIOntop {
 
         propertyFileStream.close();
 
-        //PrintStream fileOut = new PrintStream(new FileOutputStream(explFile));
         PrintStream fileOut = new PrintStream(new FileOutputStream(explFile)) {
             @Override
             public void println(String x) {
@@ -185,7 +188,7 @@ public class ExplainableAIOntop {
             startTuple = System.nanoTime();
 
             start = System.nanoTime();
-			List<MembershipAssertion> border = ui.generateBorderN(tuple, abox, 1, logOut);
+			List<MembershipAssertion> border = ui.generateBorderN(tuple, abox, radius, logOut);
             end = System.nanoTime();
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
@@ -250,9 +253,38 @@ public class ExplainableAIOntop {
         ExplainableAIOntop kg_xai = new ExplainableAIOntop();
 
         String propertyFile = "src/main/resources/npd/npd.properties"; //da parametrizzare
+        //   /home/parwal/GitHub/ontop_xai/src/main/resources/npd/npd.properties
         //propertyFile = "src/main/resources/example/books/exampleBooks.properties";
-        int radius = 1; //da parametrizzare
+        int radius = 0; //da parametrizzare
 
+        Scanner scan = new Scanner(System.in);
+        boolean validRadius = false;
+        do{
+            System.out.println("Enter a value for Radius (non-negative integer): ");
+            try{
+                radius = scan.nextInt();//tries to get data. Goes to catch if invalid data
+                validRadius = true;//if gets data successfully, sets boolean to true
+            }catch(InputMismatchException e){
+                //executes when this exception occurs
+                System.out.println("Input has to be a number. ");
+            }
+        }while(validRadius==false);//loops until validData is true
+
+
+        boolean validPropertiesFile = false;
+        do{
+            System.out.println("Enter the path to a properties file (filename.properties): ");
+            try{
+                propertyFile = scan.next();
+                FileInputStream f = new FileInputStream(propertyFile);
+                validPropertiesFile = true;
+                f.close();
+            }catch(FileNotFoundException e){
+                System.out.println("Input has to be the path to a .properties file. ");
+            }
+        }while(validPropertiesFile==false);//loops until valid
+        scan.close();
+        
         kg_xai.computeExplanation(
             propertyFile, 
             radius,

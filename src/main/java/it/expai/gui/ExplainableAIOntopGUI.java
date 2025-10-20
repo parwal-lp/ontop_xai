@@ -33,21 +33,19 @@ public class ExplainableAIOntopGUI extends Application {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(10));
 
-        // Top section - Configuration
+        // Top section - Config
         VBox topSection = createConfigurationSection();
         root.setTop(topSection);
 
-        // Status section
+        // Status label section
         HBox statusSection = new HBox();
         statusSection.setPadding(new Insets(10, 10, 5, 10));
         statusLabel = new Label("Ready");
         statusLabel.setStyle("-fx-font-size: 13px; -fx-font-weight: bold;");
         statusSection.getChildren().add(statusLabel);
 
-        // Center section - Output
+        // Center section - Log + Explanation + Status
         VBox centerSection = createOutputSection();
-        
-        // Combine status and center in a VBox
         VBox centerWithStatus = new VBox();
         centerWithStatus.getChildren().addAll(centerSection, statusSection);
         VBox.setVgrow(centerSection, Priority.ALWAYS);
@@ -182,7 +180,6 @@ public class ExplainableAIOntopGUI extends Application {
     }
 
     private void startExplanation() {
-        // Validate inputs
         String propertyFile = propertyFileField.getText().trim();
         if (propertyFile.isEmpty()) {
             showAlert("Error", "Please select a property file");
@@ -206,16 +203,14 @@ public class ExplainableAIOntopGUI extends Application {
             return;
         }
 
-        // Clear output
         detailsArea.clear();
         explanationArea.clear();
 
-        // Disable start button, enable stop button
         startButton.setDisable(true);
         stopButton.setDisable(false);
         statusLabel.setText("Running...");
 
-        // Create and start worker
+
         Consumer<String> outputCallback = message -> 
             Platform.runLater(() -> detailsArea.appendText(message + "\n"));
         

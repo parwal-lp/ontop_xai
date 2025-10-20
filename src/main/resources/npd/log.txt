@@ -1,0 +1,18 @@
+
+terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/4394060>]
+disjunct size at radius 0: 1
+
+terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/22513163>]
+disjunct size at radius 0: 1
+
+terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/4966174>]
+disjunct size at radius 0: 1
+
+terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/3988120>]
+disjunct size at radius 0: 1
+
+terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/2786190>]
+disjunct size at radius 0: 1
+
+terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/2527>]
+disjunct size at radius 0: 1
