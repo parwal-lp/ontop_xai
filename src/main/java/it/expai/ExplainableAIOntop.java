@@ -43,8 +43,6 @@ public class ExplainableAIOntop {
     }
 
     public int computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
-        System.out.println("calcolo la spiegazione con properties "+propertyFile+" e raggio "+radius);
-
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
@@ -179,6 +177,8 @@ public class ExplainableAIOntop {
 
         fileOut.println(head.toString());
 
+        List<MembershipAssertion> border;
+
         for (List<String> tuple : lambda) {
             if (stopFlag) return -1;
             long startTuple, endTuple;
@@ -188,7 +188,7 @@ public class ExplainableAIOntop {
             startTuple = System.nanoTime();
 
             start = System.nanoTime();
-			List<MembershipAssertion> border = ui.generateBorderN(tuple, abox, radius, logOut);
+			border = ui.generateBorderN(tuple, abox, radius, logOut);
             end = System.nanoTime();
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
@@ -223,7 +223,6 @@ public class ExplainableAIOntop {
             if (!stopFlag) System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
         else
             if (!stopFlag) System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
-
 
         // =======================
         // Compute Certain Answers
