@@ -5,34 +5,4 @@ WHERE {
 ?y378 <http://sws.ifi.uio.no/vocab/npd-v2#shortName> ?x1.
 }
 
-UNION
-
-{
-?y51 <http://sws.ifi.uio.no/vocab/npd-v2#shortName> ?x1.
-}
-
-UNION
-
-{
-?y405 <http://sws.ifi.uio.no/vocab/npd-v2#shortName> ?x1.
-}
-
-UNION
-
-{
-?y352 <http://sws.ifi.uio.no/vocab/npd-v2#shortName> ?x1.
-}
-
-UNION
-
-{
-?y295 <http://sws.ifi.uio.no/vocab/npd-v2#shortName> ?x1.
-}
-
-UNION
-
-{
-?y136 <http://sws.ifi.uio.no/vocab/npd-v2#shortName> ?x1.
-}
-
 }

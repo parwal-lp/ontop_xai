@@ -43,7 +43,7 @@ public class ExplanationWorker implements Runnable {
         
         try {
             int ret = runExplanation();
-            if (ret == 1) onComplete.run();
+            if (ret == 0) onComplete.run();
             else if (ret == -1) onStopped.run();
             else onError.run();
         } catch (Exception e) {
