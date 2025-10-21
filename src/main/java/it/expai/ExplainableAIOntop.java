@@ -283,7 +283,7 @@ public class ExplainableAIOntop {
         kg_xai.computeExplanation(
             "src/main/resources/npd/npd.properties",
             "src/main/resources/npd/test.csv",
-            2,
+            1,
             null
         );
 
