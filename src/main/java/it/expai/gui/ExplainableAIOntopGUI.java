@@ -16,6 +16,7 @@ public class ExplainableAIOntopGUI extends Application {
 
     private TextField lambdaFileField;
     private TextField radiusField;
+    private Label titleLabel;
     private TextArea detailsArea;
     private TextArea explanationArea;
     private Button startButton;
@@ -86,10 +87,7 @@ public class ExplainableAIOntopGUI extends Application {
         section.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5;");
 
         // Titolo con nome del database
-        String title = configuredDatabaseName != null 
-            ? "Input for computing the explanation (" + configuredDatabaseName + ")"
-            : "Input for computing the explanation";
-        Label titleLabel = new Label(title);
+        titleLabel = new Label("Input Data for computing the Explanation");
         titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
         // Lambda file selection (data samples to explain)
@@ -381,6 +379,11 @@ public class ExplainableAIOntopGUI extends Application {
                 configuredDatabaseName = dbName;
                 configuredOwlFile = owlPath;
                 configuredMappingFile = mappingPath;
+
+                // Update the title label with the database name
+                Platform.runLater(() -> {
+                    titleLabel.setText("Input for computing the explanation (" + dbName + ")");
+                });
                 
                 return true;
             } catch (Exception e) {
