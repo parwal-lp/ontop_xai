@@ -19,6 +19,10 @@ public class Concept extends MembershipAssertion{
 	public String getConceptName() {
 		return "<"+this.getNamespace()+this.getLocalName()+">";	
 	}
+
+	public String getConceptLocalName() {
+		return this.getLocalName();	
+	}
 	
 	public String toString() {
 		return super.toString()+"("+ this.term +")";

@@ -115,15 +115,15 @@ public class UtilsImpl implements IUtils {
 
 		if(predicate.endsWith("#type>")){ // è un concetto
 			int hashIndex = object.indexOf('#');
-			String namespace = object.substring(1, hashIndex);
-			String localName = object.substring(hashIndex, object.length()-1);
+			String namespace = object.substring(1, hashIndex+1);
+			String localName = object.substring(hashIndex+1, object.length()-1);
 			String term = subject.substring(0, subject.length());
 			return new Concept(namespace, localName, term);
 		}
 		else { // è un ruolo
 			int hashIndex = predicate.indexOf('#');
-			String namespace = predicate.substring(0, hashIndex);
-			String localName = predicate.substring(hashIndex, predicate.length());
+			String namespace = predicate.substring(1, hashIndex+1);
+			String localName = predicate.substring(hashIndex+1, predicate.length()-1);
 
 			String[] terms = new String[2];
 			String subj = subject.replace(",", "");
@@ -348,23 +348,42 @@ public class UtilsImpl implements IUtils {
 			}
 			index++;
 			
-			String prefix = pm.getShortForm(atom.getNamespace());
 			if(atom instanceof Concept) {
 				Concept c = (Concept) atom;
 				String term = c.getConceptTerm();
-				sb.append("?").append(term)
+
+				String namespace = c.getNamespace();  // Ricostruisci il namespace completo
+            	String prefix = findPrefixForNamespace(pm, namespace);
+				if (prefix.equals("not found")) {
+					sb.append("?").append(term)
 						.append(" a ").append(c.getConceptName())
 						.append(".\n");
+				} else {
+					sb.append("?").append(term)
+						.append(" a ").append(prefix).append(c.getConceptLocalName())
+						.append(".\n");
+				}
 				variables.add(term);				
 			}
 			else {
 				Role r = (Role) atom;
 				String domain = r.getDomainTerm();
 				String range = r.getRangeTerm();
-				sb.append("?").append(domain)
+
+				String namespace = r.getNamespace();  // Ricostruisci il namespace completo
+            	String prefix = findPrefixForNamespace(pm, namespace);
+				if (prefix.equals("not found")) {
+					sb.append("?").append(domain)
+						.append(" <").append(r.getName()).append(">")
+						.append(" ?").append(range)
+						.append(".\n");
+				} else {
+					sb.append("?").append(domain)
 						.append(" ").append(prefix).append(r.getLocalName())
 						.append(" ?").append(range)
 						.append(".\n");
+				}
+
 				variables.add(domain);
 				variables.add(range);
 			}
@@ -387,6 +406,17 @@ public class UtilsImpl implements IUtils {
 
 		return prefix;
     }
+
+	// Metodo helper per trovare il prefisso abbreviato dato il namespace completo
+	private String findPrefixForNamespace(PrefixManager pm, String namespace) {
+		for (Map.Entry<String, String> entry : pm.getPrefixMap().entrySet()) {
+			if (entry.getValue().equals(namespace)) {
+				return entry.getKey();  // Ritorna la chiave (prefisso abbreviato)
+			}
+		}
+		// Fallback: se non trovato, usa il namespace completo tra <>
+		return "not found";
+	}
 
 
 	public StringBuilder generateSparqlUCQ(Integer n, String prefix_list, List<String> sparqlDisjunctsBodies){

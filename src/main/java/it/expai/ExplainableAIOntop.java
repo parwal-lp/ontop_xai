@@ -191,7 +191,9 @@ public class ExplainableAIOntop {
         int count = 0;
 		
         
-        StringBuilder head = new StringBuilder("SELECT ");
+        StringBuilder head = new StringBuilder(prefixList+"\n");
+
+        head.append("SELECT ");
         for (int i=0; i<lambda.get(0).size(); i++){
             String index = String.valueOf(i+1);
 			head.append("?x"+index+ " ");
@@ -277,35 +279,7 @@ public class ExplainableAIOntop {
         String propertyFile = "src/main/resources/npd/npd.properties"; //da parametrizzare
         //   /home/parwal/GitHub/ontop_xai/src/main/resources/npd/npd.properties
         //propertyFile = "src/main/resources/example/books/exampleBooks.properties";
-        int radius = 0; //da parametrizzare
-
-        Scanner scan = new Scanner(System.in);
-        boolean validRadius = false;
-        do{
-            System.out.println("Enter a value for Radius (non-negative integer): ");
-            try{
-                radius = scan.nextInt();//tries to get data. Goes to catch if invalid data
-                validRadius = true;//if gets data successfully, sets boolean to true
-            }catch(InputMismatchException e){
-                //executes when this exception occurs
-                System.out.println("Input has to be a number. ");
-            }
-        }while(validRadius==false);//loops until validData is true
-
-
-        boolean validPropertiesFile = false;
-        do{
-            System.out.println("Enter the path to a properties file (filename.properties): ");
-            try{
-                propertyFile = scan.next();
-                FileInputStream f = new FileInputStream(propertyFile);
-                validPropertiesFile = true;
-                f.close();
-            }catch(FileNotFoundException e){
-                System.out.println("Input has to be the path to a .properties file. ");
-            }
-        }while(validPropertiesFile==false);//loops until valid
-        scan.close();
+        int radius = 1; //da parametrizzare
 
         String lambdaFile = "src/main/resources/npd/test-micro.csv"; //da parametrizzare
         

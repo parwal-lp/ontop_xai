@@ -1,3 +1,6 @@
 
 terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/4394060>]
 disjunct size at radius 0: 1
+
+terms used to generate disjuncts at radius 1: [<http://www.ifomis.org/bfo/1.1/snap#DependentContinuant>, <http://sws.ifi.uio.no/data/npd-v2/facility/402507>, <http://sws.ifi.uio.no/data/npd-v2/facility/377007>, <http://www.ifomis.org/bfo/1.1/snap#Continuant>, 4394060, Acergy M.S. Limited, <http://sws.ifi.uio.no/vocab/npd-v2#Company>, false, 2013-05-08, <http://sws.ifi.uio.no/vocab/npd-v2#Agent>, <http://www.ifomis.org/bfo/1.1#Entity>]
+disjunct size at radius 1: 15
