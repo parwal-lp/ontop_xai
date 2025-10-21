@@ -7,6 +7,8 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
 
+import org.semanticweb.owlapi.model.OWLOntology;
+
 import com.opencsv.exceptions.CsvValidationException;
 
 import it.unibz.inf.ontop.spec.mapping.PrefixManager;
@@ -121,6 +123,17 @@ public interface IUtils {
 	 * @throws IOException
 	 */
 	List<MembershipAssertion> replaceConstVar(List<String> tuple, List<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException;
+
+
+	/**
+	 * Refines the border by removing redundant membership assertions
+	 * @param border current border to refine
+	 * @param abox abox file
+	 * @param logOut print stream for logging purposes
+	 * @return the refined border
+	 * @throws IOException
+	 */
+	List<MembershipAssertion> refineBorder(List<MembershipAssertion> border, File abox, OWLOntology tbox, PrintStream logOut)	throws IOException;
 
 
 

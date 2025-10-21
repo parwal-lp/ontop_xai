@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.rio.ntriples.NTriplesWriter;
+import org.semanticweb.owlapi.model.OWLOntology;
 
 import it.unibz.inf.ontop.injection.OntopSQLOWLAPIConfiguration;
 import it.unibz.inf.ontop.materialization.MaterializationParams;
@@ -29,6 +30,7 @@ public class ExplainableAIOntop {
     private String owlFile;
     private String mappingFile;
     private String aboxFile;
+    private OWLOntology tbox;
     private String logFile;
     private String explFile;
     private boolean stopFlag = false;
@@ -109,6 +111,10 @@ public class ExplainableAIOntop {
                 .propertyFile(propertyFile)
                 .enableTestMode()
                 .build();
+
+        tbox = configuration.loadInputOntology().orElseThrow(
+            () -> new RuntimeException("Failed to load ontology from: " + owlFile)
+        );
 
 		Repository repo = OntopRepository.defaultRepository(configuration);
         repo.init();
@@ -200,6 +206,7 @@ public class ExplainableAIOntop {
         fileOut.println(head.toString());
 
         List<MembershipAssertion> border;
+        List<MembershipAssertion> refinedBorder;
 
         for (List<String> tuple : lambda) {
             if (stopFlag) return -1;
@@ -216,10 +223,10 @@ public class ExplainableAIOntop {
             //fileOut.println(temp);
             if (!stopFlag) System.out.println("Border computed in " + (end - start) / 1_000_000_000.0 + " seconds");
 
-
+            refinedBorder = ui.refineBorder(border, abox, tbox, logOut);
 
             start = System.nanoTime();
-			List<MembershipAssertion> disj = ui.replaceConstVar(tuple, border, existentialVars);
+			List<MembershipAssertion> disj = ui.replaceConstVar(tuple, refinedBorder, existentialVars);
             end = System.nanoTime();
             if (!stopFlag) System.out.println("Disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
             
@@ -275,8 +282,8 @@ public class ExplainableAIOntop {
 
         kg_xai.computeExplanation(
             "src/main/resources/npd/npd.properties",
-            "src/main/resources/npd/test-micro.csv",
-            1,
+            "src/main/resources/npd/test.csv",
+            2,
             null
         );
 

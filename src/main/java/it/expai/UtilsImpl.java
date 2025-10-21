@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +19,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.reasoner.*;
+import org.semanticweb.owlapi.reasoner.structural.StructuralReasonerFactory;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
@@ -213,6 +218,104 @@ public class UtilsImpl implements IUtils {
 		}
         return new LinkedList<MembershipAssertion>(disjunct);
     }
+
+
+	@Override
+	public List<MembershipAssertion> refineBorder(List<MembershipAssertion> border, File abox, OWLOntology tbox, PrintStream logOut) throws IOException {
+		
+		List<MembershipAssertion> refinedBorder = new LinkedList<>();
+		Set<MembershipAssertion> superfluousAssertions = new HashSet<>();
+		
+		logOut.println("\nStarting Border Refinement");
+		logOut.println("Original border size: " + border.size());
+		
+		// crea reasoner
+		OWLReasonerFactory reasonerFactory = new StructuralReasonerFactory();
+		OWLReasoner reasoner = reasonerFactory.createReasoner(tbox);
+		OWLDataFactory df = tbox.getOWLOntologyManager().getOWLDataFactory();
+		
+		// Raggruppa concetti per term e Ruoli per coppia di terms
+		// A(x), B(x) raggruppati per x; R(x,y), S(x,y) raggruppati per (x,y)
+		Map<String, List<MembershipAssertion>> assertionsByTerm = new HashMap<>();
+		for (MembershipAssertion assertion : border) {
+			if (assertion instanceof Concept) {
+				Concept concept = (Concept) assertion;
+				assertionsByTerm.computeIfAbsent(concept.getConceptTerm(), k -> new ArrayList<>()).add(concept);
+			}
+			else if (assertion instanceof Role) {
+				Role role = (Role) assertion;
+				String term_domain = role.getDomainTerm();
+				String term_range = role.getRangeTerm();
+
+				String key = term_domain + "," + term_range;
+				assertionsByTerm.computeIfAbsent(key, k -> new ArrayList<>()).add(role);
+			}
+		}
+		
+		// Per ogni gruppo di predicati sullo stesso term (concetto su term o ruolo su coppia di terms)
+		for (Map.Entry<String, List<MembershipAssertion>> entry : assertionsByTerm.entrySet()) {
+			List<MembershipAssertion> assertions = entry.getValue();
+			
+			if (assertions.size() <= 1) continue;
+			
+			// Confronta coppie
+			for (int i = 0; i < assertions.size(); i++) {
+				MembershipAssertion a1 = assertions.get(i);
+				
+				if (superfluousAssertions.contains(a1)) continue;
+				
+				for (int j = 0; j < assertions.size(); j++) {
+					if (i == j) continue;
+					
+					MembershipAssertion a2 = assertions.get(j);
+					
+					if (superfluousAssertions.contains(a2)) continue;
+					
+					// Costruisci IRI
+					IRI iriA1 = IRI.create(a1.getNamespace() + a1.getLocalName());
+					IRI iriA2 = IRI.create(a2.getNamespace() + a2.getLocalName());
+
+
+					if (a1 instanceof Concept && a2 instanceof Concept) {
+						OWLClass classA1 = df.getOWLClass(iriA1);
+						OWLClass classA2 = df.getOWLClass(iriA2);
+						
+						// Verifica se a2(x) ⊑ a1(x)
+						if (reasoner.getSubClasses(classA1, false).containsEntity(classA2)) {
+							superfluousAssertions.add(a1);
+							//logOut.println("SUPERFLUOUS CONCEPT ASSERTION: " + a1 + " subsumed by " + a2);
+							break;
+						}
+					}
+					else if (a1 instanceof Role && a2 instanceof Role) {
+						OWLObjectProperty propertyA1 = df.getOWLObjectProperty(iriA1);
+						OWLObjectProperty propertyA2 = df.getOWLObjectProperty(iriA2);
+						
+						// Verifica se a2(x,x) ⊑ a1(x,y)
+						if (reasoner.getSubObjectProperties(propertyA1, false).containsEntity(propertyA2)) {
+							superfluousAssertions.add(a1);
+							//logOut.println("SUPERFLUOUS ROLE ASSERTION: " + a1 + " subsumed by " + a2);
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		// Costruisci border refined
+		for (MembershipAssertion assertion : border) {
+			if (!superfluousAssertions.contains(assertion)) {
+				refinedBorder.add(assertion);
+			}
+		}
+		
+		reasoner.dispose();
+		
+		logOut.println("Refined border size: " + refinedBorder.size());
+		logOut.println("Removed " + superfluousAssertions.size() + " superfluous assertions\n");
+		
+		return refinedBorder;
+	}
 
 	@Override
 	public List<MembershipAssertion> replaceConstVar(List<String> tuple, List<MembershipAssertion> border, HashMap<String, Integer> existentialVars) throws IOException{
