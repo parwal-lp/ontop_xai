@@ -2,7 +2,21 @@ SELECT ?x1
 WHERE {
 
 {
+?y378 a <http://sws.ifi.uio.no/vocab/npd-v2#Company>.
+?y378 <http://sws.ifi.uio.no/vocab/npd-v2#name> ?y384782.
+?y378 <http://sws.ifi.uio.no/vocab/npd-v2#isCurrentLicenceLicensee> ?y58.
+?y378 a <http://www.ifomis.org/bfo/1.1/snap#DependentContinuant>.
+?y378 <http://sws.ifi.uio.no/vocab/npd-v2#isFormerLicenceOperator> ?y58.
+?y378 a <http://www.ifomis.org/bfo/1.1#Entity>.
+?y378 <http://sws.ifi.uio.no/vocab/npd-v2#isCurrentLicenceOperator> ?y58.
+?y79238 <http://sws.ifi.uio.no/vocab/npd-v2#currentResponsibleCompany> ?y378.
+?y378 a <http://www.ifomis.org/bfo/1.1/snap#Continuant>.
+?y378 <http://sws.ifi.uio.no/vocab/npd-v2#isFormerLicenceLicensee> ?y58.
 ?y378 <http://sws.ifi.uio.no/vocab/npd-v2#shortName> ?x1.
+?y79245 <http://sws.ifi.uio.no/vocab/npd-v2#currentResponsibleCompany> ?y378.
+?y378 <http://sws.ifi.uio.no/vocab/npd-v2#dateSyncNPD> ?y58628.
+?y378 <http://sws.ifi.uio.no/vocab/npd-v2#idNPD> ?y284914.
+?y378 a <http://sws.ifi.uio.no/vocab/npd-v2#Agent>.
 }
 
 }
