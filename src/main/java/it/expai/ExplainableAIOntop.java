@@ -3,16 +3,13 @@ package it.expai;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.function.Consumer;
 
 import org.eclipse.rdf4j.repository.Repository;
@@ -276,17 +273,10 @@ public class ExplainableAIOntop {
 
         ExplainableAIOntop kg_xai = new ExplainableAIOntop();
 
-        String propertyFile = "src/main/resources/npd/npd.properties"; //da parametrizzare
-        //   /home/parwal/GitHub/ontop_xai/src/main/resources/npd/npd.properties
-        //propertyFile = "src/main/resources/example/books/exampleBooks.properties";
-        int radius = 1; //da parametrizzare
-
-        String lambdaFile = "src/main/resources/npd/test-micro.csv"; //da parametrizzare
-        
         kg_xai.computeExplanation(
-            propertyFile,
-            lambdaFile,
-            radius,
+            "src/main/resources/npd/npd.properties",
+            "src/main/resources/npd/test-micro.csv",
+            1,
             null
         );
 
