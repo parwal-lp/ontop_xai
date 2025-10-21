@@ -1,0 +1,3 @@
+
+terms used to generate disjuncts at radius 0: [<http://sws.ifi.uio.no/data/npd-v2/company/4394060>]
+disjunct size at radius 0: 1

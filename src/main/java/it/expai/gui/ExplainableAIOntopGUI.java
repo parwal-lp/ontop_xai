@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 public class ExplainableAIOntopGUI extends Application {
 
-    private TextField propertyFileField;
+    private TextField lambdaFileField;
     private TextField radiusField;
     private TextArea detailsArea;
     private TextArea explanationArea;
@@ -27,6 +27,7 @@ public class ExplainableAIOntopGUI extends Application {
     
     // Configurazione iniziale - memorizzata in memoria
     private String configuredPropertyFile;
+    private String configuredDatabaseName;
     @SuppressWarnings("unused") // Reserved for future use and configuration display
     private String configuredOwlFile;
     @SuppressWarnings("unused") // Reserved for future use and configuration display
@@ -84,31 +85,34 @@ public class ExplainableAIOntopGUI extends Application {
         section.setPadding(new Insets(10, 10, 10, 10));
         section.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 5;");
 
-        Label titleLabel = new Label("Configuration");
+        // Titolo con nome del database
+        String title = configuredDatabaseName != null 
+            ? "Input for computing the explanation (" + configuredDatabaseName + ")"
+            : "Input for computing the explanation";
+        Label titleLabel = new Label(title);
         titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-        // Property file display (read-only)
-        HBox propertyFileBox = new HBox(10);
-        propertyFileBox.setAlignment(Pos.CENTER_LEFT);
-        Label propertyLabel = new Label("Property File:");
-        propertyLabel.setPrefWidth(120);
-        propertyFileField = new TextField();
-        propertyFileField.setPrefWidth(500);
-        propertyFileField.setEditable(false);
-        propertyFileField.setStyle("-fx-background-color: #f0f0f0;");
-        // Set the configured property file path
-        if (configuredPropertyFile != null) {
-            propertyFileField.setText(configuredPropertyFile);
-        }
-        Button reconfigureButton = new Button("Reconfigure...");
-        reconfigureButton.setOnAction(e -> {
-            if (showInitialSetupDialog()) {
-                // Update the display with new configuration
-                propertyFileField.setText(configuredPropertyFile);
-                statusLabel.setText("Configuration updated successfully");
+        // Lambda file selection (data samples to explain)
+        HBox lambdaFileBox = new HBox(10);
+        lambdaFileBox.setAlignment(Pos.CENTER_LEFT);
+        Label lambdaLabel = new Label("Data samples:");
+        lambdaLabel.setPrefWidth(120);
+        lambdaFileField = new TextField();
+        lambdaFileField.setPrefWidth(500);
+        lambdaFileField.setPromptText("Select CSV file with data samples to explain");
+        Button browseLambdaButton = new Button("Browse...");
+        browseLambdaButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select Data Samples File");
+            fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV Files", "*.csv")
+            );
+            File selectedFile = fileChooser.showOpenDialog(lambdaFileField.getScene().getWindow());
+            if (selectedFile != null) {
+                lambdaFileField.setText(selectedFile.getAbsolutePath());
             }
         });
-        propertyFileBox.getChildren().addAll(propertyLabel, propertyFileField, reconfigureButton);
+        lambdaFileBox.getChildren().addAll(lambdaLabel, lambdaFileField, browseLambdaButton);
 
         // Radius selection
         HBox radiusBox = new HBox(10);
@@ -119,7 +123,7 @@ public class ExplainableAIOntopGUI extends Application {
         radiusField.setPrefWidth(100);
         radiusBox.getChildren().addAll(radiusLabel, radiusField);
 
-        section.getChildren().addAll(titleLabel, propertyFileBox, radiusBox);
+        section.getChildren().addAll(titleLabel, lambdaFileBox, radiusBox);
         return section;
     }
 
@@ -190,6 +194,7 @@ public class ExplainableAIOntopGUI extends Application {
     private void startExplanation() {
         // Use configured property file from initial setup
         String propertyFile = configuredPropertyFile;
+        String lambdaFile = lambdaFileField.getText().trim();
         if (propertyFile == null || propertyFile.isEmpty()) {
             showAlert("Error", "Configuration not found. Please restart the application.");
             return;
@@ -247,7 +252,7 @@ public class ExplainableAIOntopGUI extends Application {
         });
 
         currentWorker = new ExplanationWorker(
-            propertyFile, radius, outputCallback, explCallback, 
+            propertyFile, lambdaFile, radius, outputCallback, explCallback, 
             onComplete, onError, onStopped
         );
         
@@ -373,11 +378,9 @@ public class ExplainableAIOntopGUI extends Application {
                 
                 // Store configuration in memory
                 configuredPropertyFile = generatedPropertyFile;
+                configuredDatabaseName = dbName;
                 configuredOwlFile = owlPath;
                 configuredMappingFile = mappingPath;
-                
-                // Update GUI
-                propertyFileField.setText(configuredPropertyFile);
                 
                 return true;
             } catch (Exception e) {
@@ -416,7 +419,7 @@ public class ExplainableAIOntopGUI extends Application {
         File resourcesDir = new File("resources/" + dbName);
         if (!resourcesDir.exists()) {
             resourcesDir.mkdirs();
-            System.out.println(">>> Created directory: " + resourcesDir.getAbsolutePath());
+            //System.out.println(">>> Created directory: " + resourcesDir.getAbsolutePath());
         }
         
         // Create the property file
@@ -438,10 +441,10 @@ public class ExplainableAIOntopGUI extends Application {
             fullProps.store(fos, "Generated configuration for " + dbName);
         }
         
-        System.out.println(">>> Configuration saved to: " + propertyFile.getAbsolutePath());
-        System.out.println(">>> JDBC URL: " + jdbcUrl);
-        System.out.println(">>> OWL File: " + owlPath);
-        System.out.println(">>> Mapping File: " + mappingPath);
+        // System.out.println(">>> Configuration saved to: " + propertyFile.getAbsolutePath());
+        // System.out.println(">>> JDBC URL: " + jdbcUrl);
+        // System.out.println(">>> OWL File: " + owlPath);
+        // System.out.println(">>> Mapping File: " + mappingPath);
         
         return propertyFile.getAbsolutePath();
     }

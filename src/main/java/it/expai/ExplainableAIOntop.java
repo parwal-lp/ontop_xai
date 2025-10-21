@@ -32,7 +32,6 @@ public class ExplainableAIOntop {
     private String dbProperties = "config/local.properties";
     private String owlFile;
     private String mappingFile;
-    private String lambdaFile;
     private String aboxFile;
     private String logFile;
     private String explFile;
@@ -49,7 +48,7 @@ public class ExplainableAIOntop {
         // ========================================================
     }
 
-    public int computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
+    public int computeExplanation(String propertyFile, String lambdaFile, int radius, Consumer<String> explCallback) throws Exception {
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
@@ -62,12 +61,30 @@ public class ExplainableAIOntop {
 
         owlFile = p.getProperty("owlFile");
         mappingFile = p.getProperty("mappingFile");
-        lambdaFile = p.getProperty("lambdaFile");
         aboxFile = p.getProperty("aboxFile");
         logFile = p.getProperty("logFile");
         explFile = p.getProperty("explFile");
 
         propertyFileStream.close();
+
+        // Create directories for output files if they don't exist
+        File explFileObj = new File(explFile);
+        if (explFileObj.getParentFile() != null && !explFileObj.getParentFile().exists()) {
+            explFileObj.getParentFile().mkdirs();
+            System.out.println("Created directory: " + explFileObj.getParentFile().getAbsolutePath());
+        }
+        
+        File logFileObj = new File(logFile);
+        if (logFileObj.getParentFile() != null && !logFileObj.getParentFile().exists()) {
+            logFileObj.getParentFile().mkdirs();
+            System.out.println("Created directory: " + logFileObj.getParentFile().getAbsolutePath());
+        }
+        
+        File aboxFileObj = new File(aboxFile);
+        if (aboxFileObj.getParentFile() != null && !aboxFileObj.getParentFile().exists()) {
+            aboxFileObj.getParentFile().mkdirs();
+            System.out.println("Created directory: " + aboxFileObj.getParentFile().getAbsolutePath());
+        }
 
         PrintStream fileOut = new PrintStream(new FileOutputStream(explFile)) {
             @Override
@@ -290,9 +307,12 @@ public class ExplainableAIOntop {
             }
         }while(validPropertiesFile==false);//loops until valid
         scan.close();
+
+        String lambdaFile = "src/main/resources/npd/test-micro.csv"; //da parametrizzare
         
         kg_xai.computeExplanation(
-            propertyFile, 
+            propertyFile,
+            lambdaFile,
             radius,
             null
         );

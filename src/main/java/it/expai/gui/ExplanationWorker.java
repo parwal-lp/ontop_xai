@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 public class ExplanationWorker implements Runnable {
     
     private final String propertyFile;
+    private final String lambdaFile;
     private final int radius;
     private final Consumer<String> outputCallback;
     private final Consumer<String> explCallback;
@@ -17,13 +18,14 @@ public class ExplanationWorker implements Runnable {
     private volatile boolean running = false;
     private ExplainableAIOntop app;
     
-    public ExplanationWorker(String propertyFile, int radius,
+    public ExplanationWorker(String propertyFile, String lambdaFile, int radius,
                             Consumer<String> outputCallback,
                             Consumer<String> explCallback,
                             Runnable onComplete,
                             Runnable onError,
                             Runnable onStopped) {
         this.propertyFile = propertyFile;
+        this.lambdaFile = lambdaFile;
         this.radius = radius;
         this.outputCallback = outputCallback;
         this.explCallback = explCallback;
@@ -83,7 +85,7 @@ public class ExplanationWorker implements Runnable {
         app = new ExplainableAIOntop();
         
         try {
-            ret = app.computeExplanation(propertyFile, radius, explCallback);
+            ret = app.computeExplanation(propertyFile, lambdaFile, radius, explCallback);
         } finally {
             System.setOut(originalOut);
             System.setErr(originalErr);
