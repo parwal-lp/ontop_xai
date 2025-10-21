@@ -17,6 +17,7 @@ import org.eclipse.rdf4j.rio.RDFWriter;
 import org.eclipse.rdf4j.rio.ntriples.NTriplesWriter;
 import org.semanticweb.owlapi.model.OWLOntology;
 
+import it.expai.gui.ExplainableAIOntopGUI;
 import it.unibz.inf.ontop.injection.OntopSQLOWLAPIConfiguration;
 import it.unibz.inf.ontop.materialization.MaterializationParams;
 import it.unibz.inf.ontop.rdf4j.materialization.RDF4JMaterializer;
@@ -278,14 +279,16 @@ public class ExplainableAIOntop {
 
 	public static void main(String[] args) throws Exception {
 
-        ExplainableAIOntop kg_xai = new ExplainableAIOntop();
+        // ExplainableAIOntop kg_xai = new ExplainableAIOntop();
 
-        kg_xai.computeExplanation(
-            "src/main/resources/npd/npd.properties",
-            "src/main/resources/npd/test.csv",
-            1,
-            null
-        );
+        // kg_xai.computeExplanation(
+        //     "src/main/resources/npd/npd.properties",
+        //     "src/main/resources/npd/test.csv",
+        //     1,
+        //     null
+        // );
+
+        ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
 
 	}
 
