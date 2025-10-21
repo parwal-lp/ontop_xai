@@ -24,6 +24,13 @@ public class ExplainableAIOntopGUI extends Application {
     private Label statusLabel;
     
     private ExplanationWorker currentWorker;
+    
+    // Configurazione iniziale - memorizzata in memoria
+    private String configuredPropertyFile;
+    @SuppressWarnings("unused") // Reserved for future use and configuration display
+    private String configuredOwlFile;
+    @SuppressWarnings("unused") // Reserved for future use and configuration display
+    private String configuredMappingFile;
 
     @Override
     public void start(Stage primaryStage) {
@@ -59,6 +66,13 @@ public class ExplainableAIOntopGUI extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         
+        // Show initial setup dialog after the UI is fully initialized
+        Platform.runLater(() -> {
+            if (!showInitialSetupDialog()) {
+                Platform.exit();
+            }
+        });
+        
         // Handle window close
         primaryStage.setOnCloseRequest(event -> {
             Platform.exit();
@@ -73,16 +87,28 @@ public class ExplainableAIOntopGUI extends Application {
         Label titleLabel = new Label("Configuration");
         titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-        // Property file selection
+        // Property file display (read-only)
         HBox propertyFileBox = new HBox(10);
         propertyFileBox.setAlignment(Pos.CENTER_LEFT);
         Label propertyLabel = new Label("Property File:");
         propertyLabel.setPrefWidth(120);
-        propertyFileField = new TextField("src/main/resources/npd/npd.properties");
+        propertyFileField = new TextField();
         propertyFileField.setPrefWidth(500);
-        Button browseButton = new Button("Browse...");
-        browseButton.setOnAction(e -> browsePropertyFile());
-        propertyFileBox.getChildren().addAll(propertyLabel, propertyFileField, browseButton);
+        propertyFileField.setEditable(false);
+        propertyFileField.setStyle("-fx-background-color: #f0f0f0;");
+        // Set the configured property file path
+        if (configuredPropertyFile != null) {
+            propertyFileField.setText(configuredPropertyFile);
+        }
+        Button reconfigureButton = new Button("Reconfigure...");
+        reconfigureButton.setOnAction(e -> {
+            if (showInitialSetupDialog()) {
+                // Update the display with new configuration
+                propertyFileField.setText(configuredPropertyFile);
+                statusLabel.setText("Configuration updated successfully");
+            }
+        });
+        propertyFileBox.getChildren().addAll(propertyLabel, propertyFileField, reconfigureButton);
 
         // Radius selection
         HBox radiusBox = new HBox(10);
@@ -161,28 +187,11 @@ public class ExplainableAIOntopGUI extends Application {
         return section;
     }
 
-    private void browsePropertyFile() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select Property File");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Properties Files", "*.properties")
-        );
-        
-        File currentFile = new File(propertyFileField.getText());
-        if (currentFile.getParentFile() != null && currentFile.getParentFile().exists()) {
-            fileChooser.setInitialDirectory(currentFile.getParentFile());
-        }
-        
-        File selectedFile = fileChooser.showOpenDialog(propertyFileField.getScene().getWindow());
-        if (selectedFile != null) {
-            propertyFileField.setText(selectedFile.getAbsolutePath());
-        }
-    }
-
     private void startExplanation() {
-        String propertyFile = propertyFileField.getText().trim();
-        if (propertyFile.isEmpty()) {
-            showAlert("Error", "Please select a property file");
+        // Use configured property file from initial setup
+        String propertyFile = configuredPropertyFile;
+        if (propertyFile == null || propertyFile.isEmpty()) {
+            showAlert("Error", "Configuration not found. Please restart the application.");
             return;
         }
         
@@ -261,6 +270,180 @@ public class ExplainableAIOntopGUI extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private boolean showInitialSetupDialog() {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Initial Configuration");
+        dialog.setHeaderText("Configure Database and Ontology");
+        
+        // Create form fields
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        
+        // Database name
+        TextField dbNameField = new TextField();
+        dbNameField.setPromptText("e.g., npd, books");
+        dbNameField.setPrefWidth(300);
+        
+        // Ontology file
+        TextField owlFileField = new TextField();
+        owlFileField.setPrefWidth(300);
+        Button browseOwlButton = new Button("Browse...");
+        HBox owlBox = new HBox(5, owlFileField, browseOwlButton);
+        
+        browseOwlButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select OWL Ontology File");
+            fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("OWL Files", "*.owl")
+            );
+            File selectedFile = fileChooser.showOpenDialog(dialog.getOwner());
+            if (selectedFile != null) {
+                owlFileField.setText(selectedFile.getAbsolutePath());
+            }
+        });
+        
+        // Mapping file
+        TextField mappingFileField = new TextField();
+        mappingFileField.setPrefWidth(300);
+        Button browseMappingButton = new Button("Browse...");
+        HBox mappingBox = new HBox(5, mappingFileField, browseMappingButton);
+        
+        browseMappingButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select R2RML Mapping File");
+            fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("R2RML Files", "*.r2rml", "*.ttl")
+            );
+            File selectedFile = fileChooser.showOpenDialog(dialog.getOwner());
+            if (selectedFile != null) {
+                mappingFileField.setText(selectedFile.getAbsolutePath());
+            }
+        });
+        
+        // Add to grid
+        grid.add(new Label("Database Name:"), 0, 0);
+        grid.add(dbNameField, 1, 0);
+        
+        grid.add(new Label("Ontology File (.owl):"), 0, 1);
+        grid.add(owlBox, 1, 1);
+        
+        grid.add(new Label("Mapping File (.r2rml):"), 0, 2);
+        grid.add(mappingBox, 1, 2);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        ButtonType okButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
+        
+        // Request focus
+        Platform.runLater(() -> dbNameField.requestFocus());
+        
+        // Show dialog
+        var result = dialog.showAndWait();
+        
+        if (result.isPresent() && result.get() == okButtonType) {
+            String dbName = dbNameField.getText().trim();
+            String owlPath = owlFileField.getText().trim();
+            String mappingPath = mappingFileField.getText().trim();
+            
+            // Validate input
+            if (dbName.isEmpty() || owlPath.isEmpty() || mappingPath.isEmpty()) {
+                showAlert("Configuration Error", "All fields are required!");
+                return showInitialSetupDialog(); // Retry
+            }
+            
+            if (!new File(owlPath).exists()) {
+                showAlert("File Not Found", "Ontology file does not exist: " + owlPath);
+                return showInitialSetupDialog();
+            }
+            
+            if (!new File(mappingPath).exists()) {
+                showAlert("File Not Found", "Mapping file does not exist: " + mappingPath);
+                return showInitialSetupDialog();
+            }
+            
+            // Generate property file
+            try {
+                String generatedPropertyFile = generatePropertyFile(dbName, owlPath, mappingPath);
+                
+                // Store configuration in memory
+                configuredPropertyFile = generatedPropertyFile;
+                configuredOwlFile = owlPath;
+                configuredMappingFile = mappingPath;
+                
+                // Update GUI
+                propertyFileField.setText(configuredPropertyFile);
+                
+                return true;
+            } catch (Exception e) {
+                showAlert("Configuration Error", "Failed to generate property file: " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            }
+        }
+        
+        return false; // User cancelled
+    }
+    
+    private String generatePropertyFile(String dbName, String owlPath, String mappingPath) throws Exception {
+        // Load base properties from config/local.properties
+        java.util.Properties baseProps = new java.util.Properties();
+        File baseFile = new File("config/local.properties");
+        
+        if (!baseFile.exists()) {
+            throw new Exception("Base configuration file not found: config/local.properties\n" +
+                              "Please create it with jdbc.user, jdbc.password, jdbc.driver, jdbc.host, jdbc.port");
+        }
+        
+        try (java.io.FileInputStream fis = new java.io.FileInputStream(baseFile)) {
+            baseProps.load(fis);
+        }
+        
+        // Build jdbc.url with the database name
+        String host = baseProps.getProperty("jdbc.host", "localhost");
+        String port = baseProps.getProperty("jdbc.port", "3306");
+        String jdbcUrl = String.format(
+            "jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",
+            host, port, dbName
+        );
+        
+        // Create the resources/dbname directory
+        File resourcesDir = new File("resources/" + dbName);
+        if (!resourcesDir.exists()) {
+            resourcesDir.mkdirs();
+            System.out.println(">>> Created directory: " + resourcesDir.getAbsolutePath());
+        }
+        
+        // Create the property file
+        java.util.Properties fullProps = new java.util.Properties();
+        fullProps.setProperty("jdbc.url", jdbcUrl);
+        fullProps.setProperty("jdbc.user", baseProps.getProperty("jdbc.user", "root"));
+        fullProps.setProperty("jdbc.password", baseProps.getProperty("jdbc.password", "password"));
+        fullProps.setProperty("jdbc.driver", baseProps.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver"));
+        fullProps.setProperty("owlFile", owlPath);
+        fullProps.setProperty("mappingFile", mappingPath);
+        fullProps.setProperty("aboxFile", "resources/" + dbName + "/abox.nt");
+        fullProps.setProperty("logFile", "output/" + dbName + "/log.txt");
+        fullProps.setProperty("explFile", "output/" + dbName + "/explanation.txt");
+        
+        // Save to resources/dbname/dbname.properties
+        File propertyFile = new File(resourcesDir, dbName + ".properties");
+        
+        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(propertyFile)) {
+            fullProps.store(fos, "Generated configuration for " + dbName);
+        }
+        
+        System.out.println(">>> Configuration saved to: " + propertyFile.getAbsolutePath());
+        System.out.println(">>> JDBC URL: " + jdbcUrl);
+        System.out.println(">>> OWL File: " + owlPath);
+        System.out.println(">>> Mapping File: " + mappingPath);
+        
+        return propertyFile.getAbsolutePath();
     }
 
     public static void main(String[] args) {

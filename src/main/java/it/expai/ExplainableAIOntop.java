@@ -29,6 +29,7 @@ import it.unibz.inf.ontop.spec.mapping.pp.SQLPPMapping;
 
 public class ExplainableAIOntop {
 
+    private String dbProperties = "config/local.properties";
     private String owlFile;
     private String mappingFile;
     private String lambdaFile;
@@ -40,6 +41,12 @@ public class ExplainableAIOntop {
     public void stop() {
         System.out.println("\nStopping the computation...\n");
         stopFlag = true;
+    }
+
+    public void configure() {
+        // ========================================================
+        // Setup Properties for connection to Database and to Ontop
+        // ========================================================
     }
 
     public int computeExplanation(String propertyFile, int radius, Consumer<String> explCallback) throws Exception {
