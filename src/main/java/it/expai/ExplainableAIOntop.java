@@ -28,8 +28,7 @@ import it.unibz.inf.ontop.spec.mapping.PrefixManager;
 import it.unibz.inf.ontop.spec.mapping.pp.SQLPPMapping;
 
 public class ExplainableAIOntop {
-
-    private String dbProperties = "config/local.properties";
+    
     private String owlFile;
     private String mappingFile;
     private String aboxFile;

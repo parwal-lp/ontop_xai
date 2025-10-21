@@ -390,26 +390,26 @@ public class ExplainableAIOntopGUI extends Application {
             }
         }
         
-        return false; // User cancelled
+        return false; // User cancelled the computation
     }
     
     private String generatePropertyFile(String dbName, String owlPath, String mappingPath) throws Exception {
-        // Load base properties from config/local.properties
-        java.util.Properties baseProps = new java.util.Properties();
-        File baseFile = new File("config/local.properties");
+        // Load user properties from config/local.properties
+        java.util.Properties userProps = new java.util.Properties();
+        File userFile = new File("config/local.properties");
         
-        if (!baseFile.exists()) {
+        if (!userFile.exists()) {
             throw new Exception("Base configuration file not found: config/local.properties\n" +
                               "Please create it with jdbc.user, jdbc.password, jdbc.driver, jdbc.host, jdbc.port");
         }
         
-        try (java.io.FileInputStream fis = new java.io.FileInputStream(baseFile)) {
-            baseProps.load(fis);
+        try (java.io.FileInputStream fis = new java.io.FileInputStream(userFile)) {
+            userProps.load(fis);
         }
         
         // Build jdbc.url with the database name
-        String host = baseProps.getProperty("jdbc.host", "localhost");
-        String port = baseProps.getProperty("jdbc.port", "3306");
+        String host = userProps.getProperty("jdbc.host", "localhost");
+        String port = userProps.getProperty("jdbc.port", "3306");
         String jdbcUrl = String.format(
             "jdbc:mysql://%s:%s/%s?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC",
             host, port, dbName
@@ -425,9 +425,9 @@ public class ExplainableAIOntopGUI extends Application {
         // Create the property file
         java.util.Properties fullProps = new java.util.Properties();
         fullProps.setProperty("jdbc.url", jdbcUrl);
-        fullProps.setProperty("jdbc.user", baseProps.getProperty("jdbc.user", "root"));
-        fullProps.setProperty("jdbc.password", baseProps.getProperty("jdbc.password", "password"));
-        fullProps.setProperty("jdbc.driver", baseProps.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver"));
+        fullProps.setProperty("jdbc.user", userProps.getProperty("jdbc.user", "root"));
+        fullProps.setProperty("jdbc.password", userProps.getProperty("jdbc.password", "password"));
+        fullProps.setProperty("jdbc.driver", userProps.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver"));
         fullProps.setProperty("owlFile", owlPath);
         fullProps.setProperty("mappingFile", mappingPath);
         fullProps.setProperty("aboxFile", "resources/" + dbName + "/abox.nt");
@@ -440,11 +440,6 @@ public class ExplainableAIOntopGUI extends Application {
         try (java.io.FileOutputStream fos = new java.io.FileOutputStream(propertyFile)) {
             fullProps.store(fos, "Generated configuration for " + dbName);
         }
-        
-        // System.out.println(">>> Configuration saved to: " + propertyFile.getAbsolutePath());
-        // System.out.println(">>> JDBC URL: " + jdbcUrl);
-        // System.out.println(">>> OWL File: " + owlPath);
-        // System.out.println(">>> Mapping File: " + mappingPath);
         
         return propertyFile.getAbsolutePath();
     }
