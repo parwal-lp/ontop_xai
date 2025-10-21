@@ -40,3 +40,4 @@ plugin-runtime
 
 # Log files
 **/output.txt
+**/log.txt
