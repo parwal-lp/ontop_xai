@@ -28,7 +28,6 @@ public class ExplainableAIOntopGUI extends Application {
     
     // Configurazione iniziale - memorizzata in memoria
     private String configuredPropertyFile;
-    private String configuredDatabaseName;
     @SuppressWarnings("unused") // Reserved for future use and configuration display
     private String configuredOwlFile;
     @SuppressWarnings("unused") // Reserved for future use and configuration display
@@ -288,7 +287,6 @@ public class ExplainableAIOntopGUI extends Application {
         
         // Database name
         TextField dbNameField = new TextField();
-        dbNameField.setPromptText("e.g., npd, books");
         dbNameField.setPrefWidth(300);
         
         // Ontology file
@@ -376,7 +374,6 @@ public class ExplainableAIOntopGUI extends Application {
                 
                 // Store configuration in memory
                 configuredPropertyFile = generatedPropertyFile;
-                configuredDatabaseName = dbName;
                 configuredOwlFile = owlPath;
                 configuredMappingFile = mappingPath;
 
