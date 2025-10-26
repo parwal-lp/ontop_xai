@@ -62,7 +62,10 @@ public class ExplainableAIOntop {
         mappingFile = p.getProperty("mappingFile");
         aboxFile = p.getProperty("aboxFile");
         logFile = p.getProperty("logFile");
-        explFile = p.getProperty("explFile");
+        
+        // Use radius-specific explanation file
+        String baseExplFile = p.getProperty("explFile");
+        explFile = baseExplFile.replace("explanation.txt", "explanation" + radius + ".txt");
 
         propertyFileStream.close();
 

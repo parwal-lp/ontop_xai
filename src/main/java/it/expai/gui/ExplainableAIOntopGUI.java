@@ -9,7 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import java.io.File;
+import java.io.*;
 import java.util.function.Consumer;
 
 public class ExplainableAIOntopGUI extends Application {
@@ -32,6 +32,8 @@ public class ExplainableAIOntopGUI extends Application {
     private String configuredOwlFile;
     @SuppressWarnings("unused") // Reserved for future use and configuration display
     private String configuredMappingFile;
+    private String configuredDatabaseName;
+    private int lastAcceptedRadius = -1; // Track the last radius used/displayed
 
     @Override
     public void start(Stage primaryStage) {
@@ -151,7 +153,7 @@ public class ExplainableAIOntopGUI extends Application {
         explanationArea.setStyle("-fx-font-family: monospace; -fx-font-size: 12px;");
         explanationTab.setContent(explanationArea);
 
-        tabPane.getTabs().addAll(detailsTab, explanationTab);
+        tabPane.getTabs().addAll(explanationTab, detailsTab);
         section.getChildren().add(tabPane);
 
         return section;
@@ -233,6 +235,12 @@ public class ExplainableAIOntopGUI extends Application {
             startButton.setDisable(false);
             stopButton.setDisable(true);
             statusLabel.setText("Completed");
+            
+            // Update last accepted radius
+            lastAcceptedRadius = radius;
+            
+            // Ask user if they want to try a different radius
+            askForNewRadius();
         });
         
         Runnable onError = () -> Platform.runLater(() -> {
@@ -265,6 +273,147 @@ public class ExplainableAIOntopGUI extends Application {
             statusLabel.setText("Stopping...");
         }
     }
+    
+    private void askForNewRadius() {
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Computation Completed");
+        confirmAlert.setHeaderText("Explanation has been computed successfully.");
+        confirmAlert.setContentText("Do you want to compute an explanation with a different radius?");
+        
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmAlert.getButtonTypes().setAll(yesButton, noButton);
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == yesButton) {
+                promptForNewRadius();
+            } else {
+                // User said no - delete all explanation files except the last accepted one
+                deleteOtherExplanationFiles();
+            }
+        });
+    }
+    
+    private void promptForNewRadius() {
+        TextInputDialog radiusDialog = new TextInputDialog("1");
+        radiusDialog.setTitle("New Radius");
+        radiusDialog.setHeaderText("Enter new radius value");
+        radiusDialog.setContentText("Radius:");
+        
+        radiusDialog.showAndWait().ifPresent(radiusStr -> {
+            try {
+                int newRadius = Integer.parseInt(radiusStr.trim());
+                if (newRadius < 0) {
+                    showAlert("Invalid Radius", "Radius must be a non negative integer.");
+                    return;
+                }
+                
+                // Check if explanation file exists for this radius
+                String explFilePath = getExplanationFilePath(newRadius);
+                File explFile = new File(explFilePath);
+                
+                if (explFile.exists()) {
+                    // Display existing explanation
+                    displayExistingExplanation(explFile, newRadius);
+                } else {
+                    // Update radius field and compute new explanation
+                    radiusField.setText(String.valueOf(newRadius));
+                    startExplanation();
+                }
+                
+            } catch (NumberFormatException e) {
+                showAlert("Invalid Input", "Please enter a valid integer for radius.");
+            }
+        });
+    }
+    
+    private String getExplanationFilePath(int radius) {
+        // Construct the explanation file path based on configured database name
+        return "output/" + configuredDatabaseName + "/explanation" + radius + ".txt";
+    }
+    
+    private void displayExistingExplanation(File explFile, int radius) {
+        try {
+            // Clear current explanation area
+            explanationArea.clear();
+            
+            // Read and display the file content
+            StringBuilder content = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new FileReader(explFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    content.append(line).append("\n");
+                }
+            }
+            
+            explanationArea.setText(content.toString());
+            detailsArea.appendText("\n--- Loaded existing explanation for radius " + radius + " ---\n");
+            statusLabel.setText("Loaded (radius=" + radius + ")");
+            
+            // Update radius field to reflect the loaded radius
+            radiusField.setText(String.valueOf(radius));
+            
+            // Update last accepted radius
+            lastAcceptedRadius = radius;
+            
+            // Ask for new radius after displaying
+            askForNewRadius();
+            
+        } catch (IOException e) {
+            showAlert("File Error", "Could not read explanation file: " + e.getMessage());
+        }
+    }
+    
+    private void deleteOtherExplanationFiles() {
+        if (lastAcceptedRadius == -1 || configuredDatabaseName == null) {
+            // No valid radius to keep, or no database configured
+            return;
+        }
+        
+        try {
+            File outputDir = new File("output/" + configuredDatabaseName);
+            if (!outputDir.exists() || !outputDir.isDirectory()) {
+                return;
+            }
+            
+            // Find all explanation files
+            File[] explanationFiles = outputDir.listFiles((dir, name) -> 
+                name.startsWith("explanation") && name.endsWith(".txt"));
+            
+            if (explanationFiles == null) {
+                return;
+            }
+            
+            String keepFileName = "explanation" + lastAcceptedRadius + ".txt";
+            
+            for (File file : explanationFiles) {
+                if (!file.getName().equals(keepFileName)) {
+                    if (file.delete()) {
+                        detailsArea.appendText("Deleted: " + file.getName() + "\n");
+                    } else {
+                        detailsArea.appendText("Failed to delete: " + file.getName() + "\n");
+                    }
+                }
+            }
+
+            // debug laura non rinomina il file
+            File keepFile = new File(outputDir, keepFileName);
+            if (keepFile.exists()) {
+                java.time.format.DateTimeFormatter dtf =
+                java.time.format.DateTimeFormatter.ofPattern("yy-MM-dd_HH:mm:ss");
+                String timestamp = java.time.LocalDateTime.now().format(dtf);
+                String newName = "explanation_" + timestamp + ".txt";
+                File newFile = new File(outputDir, newName);
+                keepFile.renameTo(newFile);
+                detailsArea.appendText("Final explanation saved to: " + newFile.getName() + "\n");
+            }
+
+            
+        } catch (Exception e) {
+            detailsArea.appendText("Error during file cleanup: " + e.getMessage() + "\n");
+        }
+    }
+
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -376,6 +525,7 @@ public class ExplainableAIOntopGUI extends Application {
                 configuredPropertyFile = generatedPropertyFile;
                 configuredOwlFile = owlPath;
                 configuredMappingFile = mappingPath;
+                configuredDatabaseName = dbName;
 
                 // Update the title label with the database name
                 Platform.runLater(() -> {
