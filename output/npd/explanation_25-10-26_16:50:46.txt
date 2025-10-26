@@ -1,0 +1,18 @@
+PREFIX isc: <http://resource.geosciml.org/classifier/ics/ischart/> 
+PREFIX npdv: <http://sws.ifi.uio.no/vocab/npd-v2#> 
+PREFIX ptl: <http://sws.ifi.uio.no/vocab/npd-v2-ptl#> 
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+PREFIX rr: <http://www.w3.org/ns/r2rml#> 
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+PREFIX owl: <http://www.w3.org/2002/07/owl#> 
+PREFIX obda: <https://w3id.org/obda/vocabulary#> 
+
+SELECT ?x1 
+WHERE {
+
+{
+?y322 npdv:shortName ?x1.
+}
+
+}

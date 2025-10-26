@@ -378,13 +378,13 @@ public class ExplainableAIOntopGUI extends Application {
             
             // Find all explanation files
             File[] explanationFiles = outputDir.listFiles((dir, name) -> 
-                name.startsWith("explanation") && name.endsWith(".txt"));
+                name.startsWith("tmp_explanation") && name.endsWith(".txt"));
             
             if (explanationFiles == null) {
                 return;
             }
             
-            String keepFileName = "explanation" + lastAcceptedRadius + ".txt";
+            String keepFileName = "tmp_explanation" + lastAcceptedRadius + ".txt";
             
             for (File file : explanationFiles) {
                 if (!file.getName().equals(keepFileName)) {
