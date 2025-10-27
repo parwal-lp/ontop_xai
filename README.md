@@ -9,7 +9,10 @@ A tool for generating explanations to the decisions of binary classifiers, throu
 - 🔗 **Ontop Integration**: Connects to the Ontop APIs to manage an OBDA instance with your database and ontology
 - 🎯 **Configurable**: Customize the computed explanations through the border radius parameter
 
-## Requirements
+## Quick Start
+Quick guide to install and execute the tool.
+
+### Requirements
 - **Java 21** or higher
 - **MySQL Server**
   
@@ -32,7 +35,7 @@ default.jdbc.port =
 
 An example configuration file can be found in the source code at `config/local.properties`.
 
-## Running
+### Running
 Run the following command from the directory where both the executable `ontop_xai.jar` and the configuration file `local.properties` are located:
 ```bash
 java -jar ontop_xai.jar
@@ -51,6 +54,6 @@ java -jar ontop_xai.jar
 
 
 ## Examples
-Example datasets are included in the source code at `resources/npd` and `resources/books`:
+Example domains (dataset, ontology, mapping) are included in the source code at `resources/npd` and `resources/books`:
 - **Books**: Simple dataset with authors, books, and editions
 - **NPD**: Norwegian Petroleum Directorate Dataset
