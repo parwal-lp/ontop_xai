@@ -44,3 +44,7 @@ plugin-runtime
 
 # compiled packages
 *.jar
+
+# Explanation files
+output
+domains

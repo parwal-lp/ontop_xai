@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.*;
 import java.util.function.Consumer;
@@ -23,6 +24,8 @@ public class ExplainableAIOntopGUI extends Application {
     private Button stopButton;
     private Button clearButton;
     private Label statusLabel;
+    private Tab explanationTab;
+    private TabPane tabPane;
     
     private ExplanationWorker currentWorker;
     
@@ -132,7 +135,7 @@ public class ExplainableAIOntopGUI extends Application {
         VBox.setVgrow(section, Priority.ALWAYS);
 
         // Output tabs
-        TabPane tabPane = new TabPane();
+        tabPane = new TabPane();
         VBox.setVgrow(tabPane, Priority.ALWAYS);
 
         // Computation Details tab
@@ -145,7 +148,7 @@ public class ExplainableAIOntopGUI extends Application {
         detailsTab.setContent(detailsArea);
 
         // Explanation tab
-        Tab explanationTab = new Tab("Explanation");
+        explanationTab = new Tab("Explanation");
         explanationTab.setClosable(false);
         explanationArea = new TextArea();
         explanationArea.setEditable(false);
@@ -235,12 +238,20 @@ public class ExplainableAIOntopGUI extends Application {
             startButton.setDisable(false);
             stopButton.setDisable(true);
             statusLabel.setText("Completed");
+            tabPane.getSelectionModel().select(explanationTab);
             
             // Update last accepted radius
             lastAcceptedRadius = radius;
             
             // Ask user if they want to try a different radius
-            askForNewRadius();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(100); // Small delay to let UI render
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Platform.runLater(() -> askForNewRadius());
+            }).start();
         });
         
         Runnable onError = () -> Platform.runLater(() -> {
@@ -273,8 +284,9 @@ public class ExplainableAIOntopGUI extends Application {
             statusLabel.setText("Stopping...");
         }
     }
-    
-    private void askForNewRadius() {
+
+
+    private void askForNewRadiusold() {
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Computation Completed");
         confirmAlert.setHeaderText("Explanation has been computed successfully.");
@@ -292,6 +304,58 @@ public class ExplainableAIOntopGUI extends Application {
                 deleteOtherExplanationFiles();
             }
         });
+    }
+    
+    private void askForNewRadius() {
+        Stage dialogStage = new Stage();
+        dialogStage.initModality(Modality.NONE);
+        dialogStage.setTitle("Computation Completed");
+        dialogStage.setAlwaysOnTop(true);
+        dialogStage.setResizable(false);
+        
+        VBox root = new VBox();
+        root.setStyle("-fx-padding: 0;");
+        
+        // Header section (like Alert header)
+        VBox headerBox = new VBox();
+        headerBox.setStyle("-fx-padding: 15px; -fx-background-color: #f5f5f5;");
+        Label headerLabel = new Label("Explanation has been computed successfully.");
+        headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
+        headerBox.getChildren().add(headerLabel);
+        
+        // Content section
+        VBox contentBox = new VBox(5);
+        contentBox.setStyle("-fx-padding: 15px;");
+        Label messageLabel = new Label("Do you want to compute an explanation with a different radius?");
+        messageLabel.setStyle("-fx-font-size: 13px;");
+        messageLabel.setWrapText(true);
+        contentBox.getChildren().add(messageLabel);
+        
+        // Button section (like Alert buttons)
+        HBox buttonBox = new HBox(5);
+        buttonBox.setStyle("-fx-padding: 15px; -fx-background-color: #f5f5f5; -fx-alignment: center-right;");
+        
+        Button yesButton = new Button("Yes");
+        yesButton.setPrefWidth(80);
+        yesButton.setOnAction(e -> {
+            dialogStage.close();
+            promptForNewRadius();
+        });
+        
+        Button noButton = new Button("No");
+        noButton.setPrefWidth(80);
+        noButton.setOnAction(e -> {
+            dialogStage.close();
+            deleteOtherExplanationFiles();
+        });
+        
+        buttonBox.getChildren().addAll(yesButton, noButton);
+        
+        root.getChildren().addAll(headerBox, contentBox, buttonBox);
+        
+        Scene scene = new Scene(root, 450, 150);
+        dialogStage.setScene(scene);
+        dialogStage.show();
     }
     
     private void promptForNewRadius() {
@@ -329,7 +393,7 @@ public class ExplainableAIOntopGUI extends Application {
     
     private String getExplanationFilePath(int radius) {
         // Construct the explanation file path based on configured database name
-        return "output/" + configuredDatabaseName + "/explanation" + radius + ".txt";
+        return "output/" + configuredDatabaseName + "/tmp_explanation" + radius + ".txt";
     }
     
     private void displayExistingExplanation(File explFile, int radius) {
@@ -549,8 +613,11 @@ public class ExplainableAIOntopGUI extends Application {
         File userFile = new File("config/local.properties");
         
         if (!userFile.exists()) {
-            throw new Exception("Base configuration file not found: config/local.properties\n" +
-                              "Please create it with jdbc.user, jdbc.password, jdbc.driver, jdbc.host, jdbc.port");
+            userFile = new File("local.properties");
+            if (!userFile.exists()) {
+                throw new Exception("Base configuration file not found: config/local.properties\n" +
+                                  "Please create it with jdbc.user, jdbc.password, jdbc.driver, jdbc.host, jdbc.port");
+            }
         }
         
         try (java.io.FileInputStream fis = new java.io.FileInputStream(userFile)) {
@@ -565,11 +632,11 @@ public class ExplainableAIOntopGUI extends Application {
             host, port, dbName
         );
         
-        // Create the resources/dbname directory
-        File resourcesDir = new File("resources/" + dbName);
-        if (!resourcesDir.exists()) {
-            resourcesDir.mkdirs();
-            //System.out.println(">>> Created directory: " + resourcesDir.getAbsolutePath());
+        // Create the domains/dbname directory
+        File domainsDir = new File("domains/" + dbName);
+        if (!domainsDir.exists()) {
+            domainsDir.mkdirs();
+            //System.out.println(">>> Created directory: " + domainsDir.getAbsolutePath());
         }
         
         // Create the property file
@@ -580,12 +647,12 @@ public class ExplainableAIOntopGUI extends Application {
         fullProps.setProperty("jdbc.driver", userProps.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver"));
         fullProps.setProperty("owlFile", owlPath);
         fullProps.setProperty("mappingFile", mappingPath);
-        fullProps.setProperty("aboxFile", "resources/" + dbName + "/abox.nt");
+        fullProps.setProperty("aboxFile", "domains/" + dbName + "/abox.nt");
         fullProps.setProperty("logFile", "output/" + dbName + "/log.txt");
         fullProps.setProperty("explFile", "output/" + dbName + "/explanation.txt");
         
         // Save to resources/dbname/dbname.properties
-        File propertyFile = new File(resourcesDir, dbName + ".properties");
+        File propertyFile = new File(domainsDir, dbName + ".properties");
         
         try (java.io.FileOutputStream fos = new java.io.FileOutputStream(propertyFile)) {
             fullProps.store(fos, "Generated configuration for " + dbName);
