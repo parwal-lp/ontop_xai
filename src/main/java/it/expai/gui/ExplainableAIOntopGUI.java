@@ -31,10 +31,6 @@ public class ExplainableAIOntopGUI extends Application {
     
     // Configurazione iniziale - memorizzata in memoria
     private String configuredPropertyFile;
-    @SuppressWarnings("unused") // Reserved for future use and configuration display
-    private String configuredOwlFile;
-    @SuppressWarnings("unused") // Reserved for future use and configuration display
-    private String configuredMappingFile;
     private String configuredDatabaseName;
     private int lastAcceptedRadius = -1; // Track the last radius used/displayed
 
@@ -566,8 +562,6 @@ public class ExplainableAIOntopGUI extends Application {
                 
                 // Store configuration in memory
                 configuredPropertyFile = generatedPropertyFile;
-                configuredOwlFile = owlPath;
-                configuredMappingFile = mappingPath;
                 configuredDatabaseName = dbName;
 
                 // Update the title label with the database name
