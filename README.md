@@ -1,4 +1,4 @@
-# Explainable AI with Ontop
+# KG-XAI Tool
 
 A tool for generating explanations to the decisions of binary classifiers, through the Ontology-Based Data Access (OBDA) paradigm.
 
