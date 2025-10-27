@@ -284,28 +284,7 @@ public class ExplainableAIOntopGUI extends Application {
             statusLabel.setText("Stopping...");
         }
     }
-
-
-    private void askForNewRadiusold() {
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Computation Completed");
-        confirmAlert.setHeaderText("Explanation has been computed successfully.");
-        confirmAlert.setContentText("Do you want to compute an explanation with a different radius?");
-        
-        ButtonType yesButton = new ButtonType("Yes");
-        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
-        confirmAlert.getButtonTypes().setAll(yesButton, noButton);
-        
-        confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == yesButton) {
-                promptForNewRadius();
-            } else {
-                // User said no - delete all explanation files except the last accepted one
-                deleteOtherExplanationFiles();
-            }
-        });
-    }
-    
+   
     private void askForNewRadius() {
         Stage dialogStage = new Stage();
         dialogStage.initModality(Modality.NONE);
