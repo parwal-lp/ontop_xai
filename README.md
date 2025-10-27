@@ -13,7 +13,7 @@ A tool for generating explanations to the decisions of binary classifiers, throu
 Quick guide to install and execute the tool.
 
 ### Requirements
-- **Java 21** or higher - [Download JRE](https://www.oracle.com/java/technologies/downloads/)
+- **Java 21** or higher - [Download Java](https://www.oracle.com/java/technologies/downloads/)
 - **MySQL Server** - [Download MySQL](https://dev.mysql.com/downloads/mysql/)
 
   
