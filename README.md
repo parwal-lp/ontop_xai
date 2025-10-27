@@ -55,6 +55,6 @@ java -jar ontop_xai.jar
 
 
 ## Examples
-Example domains (dataset, ontology, mapping) are included in the source code at `resources/npd` and `resources/books`:
+Example domains (dataset, ontology, mapping) are included in the source code at `examples/`:
 - **Books**: Simple dataset with authors, books, and editions
 - **NPD**: Norwegian Petroleum Directorate Dataset
