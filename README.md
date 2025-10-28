@@ -58,3 +58,12 @@ java -jar ontop_xai.jar
 Example domains (dataset, ontology, mapping) are included in the source code at `examples/`:
 - **Books**: Simple dataset with authors, books, and editions
 - **NPD**: Norwegian Petroleum Directorate Dataset
+
+In order to run the tool on an example domain, follow these steps after completing the [Installation](#installation) and [Configuration](#configuration) phases.
+1. Download the content of the folder `examples/npd` if you want to try the NDP domain, or `examples/books` for the Books domain. Here you will find four files: a .sql script to create the database, a .owl file for the ontology, a .r2rml file for the mappings, and a .csv file containing the samples to explain.
+2. Run in MySQL Server the .sql script you just downloaded from either `examples/npd` or `examples/books`.
+3. Run the `ontop_xai.jar` file using the command `java -jar ontop_xai.jar`, as explained in the [Running](#running) section.
+4. When promted by the system, specify `npd` as database name for the NPD domain, and `books` for the Books domain.
+Then select the .owl file as ontology, and the .r2rml file as mappings.
+5. Select the .csv file as Data samples file, and then choose a radius (non-negative integer).
+6. Click on "Compute Explanation" to generate the explanation.
