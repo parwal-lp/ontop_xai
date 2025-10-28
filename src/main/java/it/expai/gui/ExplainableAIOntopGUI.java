@@ -121,7 +121,13 @@ public class ExplainableAIOntopGUI extends Application {
         radiusField.setPrefWidth(100);
         radiusBox.getChildren().addAll(radiusLabel, radiusField);
 
-        section.getChildren().addAll(titleLabel, lambdaFileBox, radiusBox);
+
+        Button changeDomainButton = new Button("Change Domain");
+        changeDomainButton.setPrefWidth(150);
+        changeDomainButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;");
+        changeDomainButton.setOnAction(e -> changeDomain());
+
+        section.getChildren().addAll(titleLabel, lambdaFileBox, radiusBox, changeDomainButton);
         return section;
     }
 
@@ -181,6 +187,8 @@ public class ExplainableAIOntopGUI extends Application {
             explanationArea.clear();
             statusLabel.setText("Ready");
         });
+
+
 
         section.getChildren().addAll(
             startButton, stopButton, clearButton
@@ -460,6 +468,38 @@ public class ExplainableAIOntopGUI extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void changeDomain() {
+        // Ask for confirmation
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Change Domain");
+        confirmAlert.setHeaderText("Change to a different domain?");
+        confirmAlert.setContentText("This will clear all current outputs and load a new configuration.");
+        
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmAlert.getButtonTypes().setAll(yesButton, noButton);
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == yesButton) {
+                // Clear outputs
+                detailsArea.clear();
+                explanationArea.clear();
+                lambdaFileField.clear();
+                radiusField.setText("1");
+                statusLabel.setText("Ready");
+                
+                // Reset configuration
+                lastAcceptedRadius = -1;
+                
+                // Show setup dialog
+                if (!showInitialSetupDialog()) {
+                    // User cancelled, keep old configuration
+                    showAlert("Configuration", "Domain change cancelled. Keeping previous configuration.");
+                }
+            }
+        });
     }
 
     private boolean showInitialSetupDialog() {
