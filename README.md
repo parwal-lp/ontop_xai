@@ -20,7 +20,7 @@ Quick guide to install and execute the tool.
 ### Installation
 1. Download `ontop_xai.jar` from the [latest release](https://github.com/parwal-lp/ontop_xai/releases/latest)
 2. Ensure MySQL Server is running
-3. [Optional] For some useful examples download the source code (zip or tar.gz) of the [latest release](https://github.com/parwal-lp/ontop_xai/releases/latest)
+3. [Optional] For some useful examples, also download the content of the [`examples/`](/examples/) folder
 
 ### Configuration
 Create a file named `local.properties` in the same directory you saved the executable `ontop_xai.jar`.
