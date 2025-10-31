@@ -660,11 +660,14 @@ public class ExplainableAIOntopGUI extends Application {
         fullProps.setProperty("jdbc.password", userProps.getProperty("jdbc.password", "password"));
         fullProps.setProperty("jdbc.driver", userProps.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver"));
         
+        fullProps.setProperty("owlFile", new File(owlPath).toURI().toString());
+        fullProps.setProperty("mappingFile", new File(mappingPath).toURI().toString());
+
         //String owlCrossPath = new File(owlPath).getCanonicalPath();
-        fullProps.setProperty("owlFile", owlPath);
+        //fullProps.setProperty("owlFile", owlPath);
         
         //String mappingCrossPath = new File(mappingPath).getCanonicalPath();
-        fullProps.setProperty("mappingFile", mappingPath);
+        //fullProps.setProperty("mappingFile", mappingPath);
         
         String[] aboxPath = {"domains", dbName, "abox.nt"};
         fullProps.setProperty("aboxFile", String.join(File.separator, aboxPath));

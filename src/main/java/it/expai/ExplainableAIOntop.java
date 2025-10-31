@@ -112,7 +112,7 @@ public class ExplainableAIOntop {
         OntopSQLOWLAPIConfiguration configuration = OntopSQLOWLAPIConfiguration.defaultBuilder()
                 .ontologyFile(owlFile)
                 .r2rmlMappingFile(mappingFile)
-                .propertyFile(propertyFile)
+                .propertyFile(new File(propertyFile).toURI().toString())
                 .enableTestMode()
                 .build();
 
