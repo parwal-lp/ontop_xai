@@ -14,7 +14,8 @@ Quick guide to install and execute the tool.
 
 ### Requirements
 - **Java 21** or higher - [Download Java](https://www.oracle.com/java/technologies/downloads/)
-- **MySQL Server** - [Download MySQL](https://dev.mysql.com/downloads/mysql/)
+- **MySQL Server** - [Download MySQL Server](https://dev.mysql.com/downloads/mysql/)
+- [Optional] **MySQL Workbench** - [Download MySQL Workbench](https://dev.mysql.com/downloads/workbench/) (Graphical User Interface for MySQL)
 
   
 ### Installation
@@ -37,7 +38,7 @@ default.jdbc.port =
 An example configuration file can be found in the source code at `config/local.properties`.
 
 ### Running
-Run the following command from the directory where both the executable `ontop_xai.jar` and the configuration file `local.properties` are located:
+Open a terminal in the folder that contains both the executable `ontop_xai.jar` and the configuration file `local.properties`, and run the following command:
 ```bash
 java -jar ontop_xai.jar
 ```
