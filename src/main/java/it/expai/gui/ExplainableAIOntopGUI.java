@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.function.Consumer;
 
 public class ExplainableAIOntopGUI extends Application {
@@ -376,7 +377,8 @@ public class ExplainableAIOntopGUI extends Application {
     
     private String getExplanationFilePath(int radius) {
         // Construct the explanation file path based on configured database name
-        return "output/" + configuredDatabaseName + "/tmp_explanation" + radius + ".txt";
+        //return "output/" + configuredDatabaseName + "/tmp_explanation" + radius + ".txt";
+        return Paths.get("output", configuredDatabaseName, "tmp_explanation" + radius + ".txt").toString();
     }
     
     private void displayExistingExplanation(File explFile, int radius) {
@@ -665,13 +667,13 @@ public class ExplainableAIOntopGUI extends Application {
         fullProps.setProperty("mappingFile", mappingPath);
         
         String[] aboxPath = {"domains", dbName, "abox.nt"};
-        fullProps.setProperty("aboxFile", String.join(File.pathSeparator, aboxPath));
+        fullProps.setProperty("aboxFile", String.join(File.separator, aboxPath));
 
         String[] logPath = {"output", dbName, "log.txt"};
-        fullProps.setProperty("logFile", String.join(File.pathSeparator, logPath));
+        fullProps.setProperty("logFile", String.join(File.separator, logPath));
 
         String[] explPath = {"output", dbName, "explanation.txt"};
-        fullProps.setProperty("explFile", String.join(File.pathSeparator, explPath));
+        fullProps.setProperty("explFile", String.join(File.separator, explPath));
         
         // Save to resources/dbname/dbname.properties
         File propertyFile = new File(domainsDir, dbName + ".properties");
