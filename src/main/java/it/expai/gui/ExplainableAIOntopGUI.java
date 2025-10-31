@@ -651,18 +651,27 @@ public class ExplainableAIOntopGUI extends Application {
             domainsDir.mkdirs();
             //System.out.println(">>> Created directory: " + domainsDir.getAbsolutePath());
         }
-        
         // Create the property file
         java.util.Properties fullProps = new java.util.Properties();
         fullProps.setProperty("jdbc.url", jdbcUrl);
         fullProps.setProperty("jdbc.user", userProps.getProperty("jdbc.user", "root"));
         fullProps.setProperty("jdbc.password", userProps.getProperty("jdbc.password", "password"));
         fullProps.setProperty("jdbc.driver", userProps.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver"));
+        
+        //String owlCrossPath = new File(owlPath).getCanonicalPath();
         fullProps.setProperty("owlFile", owlPath);
+        
+        //String mappingCrossPath = new File(mappingPath).getCanonicalPath();
         fullProps.setProperty("mappingFile", mappingPath);
-        fullProps.setProperty("aboxFile", "domains/" + dbName + "/abox.nt");
-        fullProps.setProperty("logFile", "output/" + dbName + "/log.txt");
-        fullProps.setProperty("explFile", "output/" + dbName + "/explanation.txt");
+        
+        String[] aboxPath = {"domains", dbName, "abox.nt"};
+        fullProps.setProperty("aboxFile", String.join(File.pathSeparator, aboxPath));
+
+        String[] logPath = {"output", dbName, "log.txt"};
+        fullProps.setProperty("logFile", String.join(File.pathSeparator, logPath));
+
+        String[] explPath = {"output", dbName, "explanation.txt"};
+        fullProps.setProperty("explFile", String.join(File.pathSeparator, explPath));
         
         // Save to resources/dbname/dbname.properties
         File propertyFile = new File(domainsDir, dbName + ".properties");
