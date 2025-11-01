@@ -54,6 +54,10 @@ java -jar ontop_xai.jar
 6. **Adjust Radius**: Once the computation is completed, the explanation is displayed. You can either choose to keep it and save it to file, or recompute it with a different radius
 7. **View Results**: When you obtain an explanation that is suitable for your needs, answer "no" when prompted to adjust the radius again. The computed explanation will be saved to: `output/<dbname>/explanation_<YY-mm-dd_HH:mm:ss>.txt`
 
+During execution the tool creates two new folders in the same location of the `ontop_xai.jar` file:
+- `output/` contains one subfolder per domain, containing the generated explanation files (e.g. `output/books/explanation_25-10-30_10:12:42.txt`)
+- `domains/` stores per‑domain configuration and resources, used to speed up subsequent runs on the same domain (e.g. `domains/books/abox.nt`).
+
 
 ## Examples
 Example domains (dataset, ontology, mapping) are included in the source code at `examples/`:
