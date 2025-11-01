@@ -110,9 +110,9 @@ public class ExplainableAIOntop {
         if (stopFlag) return -1;
         System.out.println("\n===========================\nConnessione a Ontop e MySQL\n===========================");
         OntopSQLOWLAPIConfiguration configuration = OntopSQLOWLAPIConfiguration.defaultBuilder()
-                .ontologyFile(new File(owlFile).toURI().toString())
-                .r2rmlMappingFile(new File(mappingFile).toURI().toString())
-                .propertyFile(new File(propertyFile).toURI().toString())
+                .ontologyFile(new File(owlFile))
+                .r2rmlMappingFile(new File(mappingFile))
+                .propertyFile(new File(propertyFile))
                 .enableTestMode()
                 .build();
 
