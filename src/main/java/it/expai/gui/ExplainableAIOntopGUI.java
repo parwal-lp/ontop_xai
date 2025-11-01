@@ -660,8 +660,8 @@ public class ExplainableAIOntopGUI extends Application {
         fullProps.setProperty("jdbc.password", userProps.getProperty("jdbc.password", "password"));
         fullProps.setProperty("jdbc.driver", userProps.getProperty("jdbc.driver", "com.mysql.cj.jdbc.Driver"));
         
-        fullProps.setProperty("owlFile", new File(owlPath).toURI().toString());
-        fullProps.setProperty("mappingFile", new File(mappingPath).toURI().toString());
+        fullProps.setProperty("owlFile", new File(owlPath).getCanonicalPath());
+        fullProps.setProperty("mappingFile", new File(mappingPath).getCanonicalPath());
 
         //String owlCrossPath = new File(owlPath).getCanonicalPath();
         //fullProps.setProperty("owlFile", owlPath);
@@ -685,7 +685,7 @@ public class ExplainableAIOntopGUI extends Application {
             fullProps.store(fos, "Generated configuration for " + dbName);
         }
         
-        return propertyFile.getAbsolutePath();
+        return propertyFile.getCanonicalPath();
     }
 
     public static void main(String[] args) {
