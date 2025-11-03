@@ -209,7 +209,7 @@ public class UtilsImpl implements IUtils {
 			}
 			br.close();
 
-			logOut.println("\nterms used to generate disjuncts at radius "+currentRadius+": "+newTerms);
+			//logOut.println("\nterms used to generate disjuncts at radius "+currentRadius+": "+newTerms);
 			logOut.println("disjunct size at radius "+currentRadius+": "+disjunct.size());
 
 			allFoundTerms.addAll(newTerms);

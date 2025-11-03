@@ -159,7 +159,7 @@ public class ExplainableAIOntop {
                 long numberOfTriples = graphQuery.getTripleCountSoFar();
                 end = System.currentTimeMillis();
                 seconds=((end - start)/1000F);
-                if (!stopFlag) System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
+                if (!stopFlag) System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds); logOut.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
                 abox = Paths.get(aboxFile).toFile();
 		    }
         }
@@ -187,7 +187,7 @@ public class ExplainableAIOntop {
         start = System.nanoTime();
 		HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
         end = System.nanoTime();
-        if (!stopFlag) System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
+        if (!stopFlag) System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds"); logOut.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
 
         // ==================
         // Compute Exlanation
@@ -212,6 +212,11 @@ public class ExplainableAIOntop {
         List<MembershipAssertion> border;
         List<MembershipAssertion> refinedBorder;
 
+        long avgBorder = 0;
+        long avgRefine = 0;
+        long avgDisjunct = 0;
+        long avgTuple = 0;
+
         for (List<String> tuple : lambda) {
             if (stopFlag) return -1;
             long startTuple, endTuple;
@@ -225,26 +230,33 @@ public class ExplainableAIOntop {
             end = System.nanoTime();
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
+            avgBorder += (end - start);
             if (!stopFlag) System.out.println("Border computed in " + (end - start) / 1_000_000_000.0 + " seconds");
 
+            start = System.nanoTime();
             refinedBorder = ui.refineBorder(border, abox, tbox, logOut);
+            end = System.nanoTime();
+            avgRefine += (end - start);
+            if (!stopFlag) System.out.println("Border refined in " + (end - start) / 1_000_000_000.0 + " seconds");
 
             start = System.nanoTime();
 			List<MembershipAssertion> disj = ui.replaceConstVar(tuple, refinedBorder, existentialVars);
-            end = System.nanoTime();
-            if (!stopFlag) System.out.println("Disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
+            //end = System.nanoTime();
+            //if (!stopFlag) System.out.println("Disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
             
 
-            start = System.nanoTime();
+            //start = System.nanoTime();
 			String query_sparql = ui.sparqlTranslate(disj, prefixList, pm);
             end = System.nanoTime();
-            if (!stopFlag) System.out.println("SPARQL Query computed in " + (end - start) / 1_000_000_000.0 + " seconds");
+            avgDisjunct += (end - start);
+            if (!stopFlag) System.out.println("SPARQL disjunct computed in " + (end - start) / 1_000_000_000.0 + " seconds");
             
             fileOut.println(query_sparql);
             if (count < lambdaSize) {
                 fileOut.println("\nUNION\n");
             }
             endTuple = System.nanoTime();
+            avgTuple += (endTuple - startTuple);
             if (!stopFlag) System.out.println("Total time for tuple processing [" + (endTuple - startTuple) / 1_000_000_000.0 + " seconds]");
 		}
         fileOut.println("\n}");
@@ -252,11 +264,21 @@ public class ExplainableAIOntop {
         long endExpl = System.nanoTime();
         long totElapsedTime = endExpl - startExpl;
         System.out.println("\n============ END COMPUTATION ============");
-        if (totElapsedTime > 60_000_000_000L)
-            if (!stopFlag) System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
-        else
-            if (!stopFlag) System.out.println("Explanation computed and printed to file ("+explFile+").\nTotal time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
-
+        if (totElapsedTime > 60_000_000_000L) {
+            System.out.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
+            logOut.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
+        }
+        else {
+            System.out.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
+            logOut.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
+        }
+        
+        logOut.println("\n============ AVG STATISTICS ============");
+        logOut.println("Average time to compute border: " + ((avgBorder / lambdaSize) / 1_000_000_000.0) + " seconds");
+        logOut.println("Average time to refine border: " + ((avgRefine / lambdaSize) / 1_000_000_000.0) + " seconds");
+        logOut.println("Average time to compute SPARQL disjunct: " + ((avgDisjunct / lambdaSize) / 1_000_000_000.0) + " seconds");
+        logOut.println("Average time total computation per tuple: " + ((avgTuple / lambdaSize) / 1_000_000_000.0) + " seconds");
+        
         // =======================
         // Compute Certain Answers
         // =======================
