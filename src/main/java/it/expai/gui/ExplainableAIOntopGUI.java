@@ -59,7 +59,7 @@ public class ExplainableAIOntopGUI extends Application {
     // Configurazione iniziale - memorizzata in memoria
     private String configuredPropertyFile;
     private String configuredDatabaseName;
-    private int lastAcceptedRadius = -1; // Track the last radius used/displayed
+    private int lastAcceptedRadius = -2; // Track the last radius used/displayed
 
     @Override
     public void start(Stage primaryStage) {
@@ -545,7 +545,7 @@ public class ExplainableAIOntopGUI extends Application {
     }
     
     private void deleteOtherExplanationFiles() {
-        if (lastAcceptedRadius == -1 || configuredDatabaseName == null) {
+        if (lastAcceptedRadius == -2 || configuredDatabaseName == null) {
             // No valid radius to keep, or no database configured
             return;
         }
@@ -624,7 +624,7 @@ public class ExplainableAIOntopGUI extends Application {
                 statusLabel.setText("Ready");
                 
                 // Reset configuration
-                lastAcceptedRadius = -1;
+                lastAcceptedRadius = -2;
                 
                 // Show setup dialog
                 if (!showInitialSetupDialog()) {
