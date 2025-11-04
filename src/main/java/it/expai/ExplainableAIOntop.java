@@ -34,6 +34,7 @@ public class ExplainableAIOntop {
     private OWLOntology tbox;
     private String logFile;
     private String explFile;
+    private String testFile;
     private boolean stopFlag = false;
 
     public void stop() {
@@ -62,6 +63,7 @@ public class ExplainableAIOntop {
         mappingFile = p.getProperty("mappingFile");
         aboxFile = p.getProperty("aboxFile");
         logFile = p.getProperty("logFile");
+        testFile = "testFile.txt";
         
         // Use radius-specific explanation file
         String baseExplFile = p.getProperty("explFile");
@@ -80,6 +82,12 @@ public class ExplainableAIOntop {
         if (logFileObj.getParentFile() != null && !logFileObj.getParentFile().exists()) {
             logFileObj.getParentFile().mkdirs();
             System.out.println("Created directory: " + logFileObj.getParentFile().getAbsolutePath());
+        }
+
+        File testFileObj = new File(testFile);
+        if (testFileObj.getParentFile() != null && !testFileObj.getParentFile().exists()) {
+            testFileObj.getParentFile().mkdirs();
+            System.out.println("Created directory: " + testFileObj.getParentFile().getAbsolutePath());
         }
         
         File aboxFileObj = new File(aboxFile);
@@ -100,6 +108,7 @@ public class ExplainableAIOntop {
 
 
         PrintStream logOut = new PrintStream(new FileOutputStream(logFile));
+        PrintStream testOut = new PrintStream(new FileOutputStream(testFile, true));
         long start, end;
         float seconds;
 
@@ -144,13 +153,9 @@ public class ExplainableAIOntop {
 		File abox = Paths.get(aboxFile).toFile();
 		if (abox.exists()) {
             if (!stopFlag) System.out.println("File " + abox.getAbsolutePath() + " already exists!\n(the system will use the existing file, skipping the ABox materialization step)");
-
-            // System.out.println("\nLoading existing ABox from file...");
-			// membershipAssertions = ui.loadABoxFromFile(aboxFile, membershipAssertions, pm);
-			
 		} else {
             if (!stopFlag) System.out.println("File " + abox.getAbsolutePath() + " does not exist!\nABox materialization will start.");
-            try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(abox, true)))) {
+            try (BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(abox)))) {
                 if (!stopFlag) System.out.println("\nComputing ABox...");
                 start = System.currentTimeMillis();
                 RDFWriter writer = new NTriplesWriter(out);
@@ -159,10 +164,16 @@ public class ExplainableAIOntop {
                 long numberOfTriples = graphQuery.getTripleCountSoFar();
                 end = System.currentTimeMillis();
                 seconds=((end - start)/1000F);
-                if (!stopFlag) System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds); logOut.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
+                if (!stopFlag) {
+                    System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds); 
+                    logOut.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
+                    testOut.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
+                }
                 abox = Paths.get(aboxFile).toFile();
 		    }
         }
+
+        
 
 
         // =========================
@@ -187,7 +198,11 @@ public class ExplainableAIOntop {
         start = System.nanoTime();
 		HashMap<String, Integer> existentialVars = ui.existentialVarsMapping(abox);
         end = System.nanoTime();
-        if (!stopFlag) System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds"); logOut.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
+        if (!stopFlag){
+            System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds"); 
+            logOut.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
+            testOut.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
+        }
 
         // ==================
         // Compute Exlanation
@@ -304,16 +319,19 @@ public class ExplainableAIOntop {
 
 	public static void main(String[] args) throws Exception {
 
-        // ExplainableAIOntop kg_xai = new ExplainableAIOntop();
+        ExplainableAIOntop kg_xai = new ExplainableAIOntop();
 
-        // kg_xai.computeExplanation(
-        //     "src/main/resources/npd/npd.properties",
-        //     "src/main/resources/npd/test.csv",
-        //     1,
-        //     null
-        // );
+        // for (int i = 0; i < 11; i++) {
+            kg_xai.computeExplanation(
+                "domains/npd/npd.properties",
+                "/home/laura/Downloads/lambda_npd_arity1.csv",
+                3,
+                null
+            );
+        // }
 
-        ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
+
+        // ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
 
 	}
 
