@@ -8,6 +8,7 @@ public class ExplanationWorker implements Runnable {
     
     private final String propertyFile;
     private final String lambdaFile;
+    private final String mode;
     private final int radius;
     private final Consumer<String> outputCallback;
     private final Consumer<String> explCallback;
@@ -18,7 +19,7 @@ public class ExplanationWorker implements Runnable {
     private volatile boolean running = false;
     private ExplainableAIOntop app;
     
-    public ExplanationWorker(String propertyFile, String lambdaFile, int radius,
+    public ExplanationWorker(String propertyFile, String lambdaFile, String mode, int radius,
                             Consumer<String> outputCallback,
                             Consumer<String> explCallback,
                             Runnable onComplete,
@@ -26,6 +27,7 @@ public class ExplanationWorker implements Runnable {
                             Runnable onStopped) {
         this.propertyFile = propertyFile;
         this.lambdaFile = lambdaFile;
+        this.mode = mode;
         this.radius = radius;
         this.outputCallback = outputCallback;
         this.explCallback = explCallback;
@@ -85,7 +87,7 @@ public class ExplanationWorker implements Runnable {
         app = new ExplainableAIOntop();
         
         try {
-            ret = app.computeExplanation(propertyFile, lambdaFile, radius, explCallback, null);
+            ret = app.computeExplanation(propertyFile, lambdaFile, mode, radius, explCallback, null);
         } finally {
             System.setOut(originalOut);
             System.setErr(originalErr);

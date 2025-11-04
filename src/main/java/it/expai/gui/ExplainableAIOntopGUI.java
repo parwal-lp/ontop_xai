@@ -1,18 +1,37 @@
 package it.expai.gui;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.function.Consumer;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import java.io.*;
-import java.nio.file.Paths;
-import java.util.function.Consumer;
+import javafx.util.Pair;
 
 public class ExplainableAIOntopGUI extends Application {
 
@@ -27,13 +46,15 @@ public class ExplainableAIOntopGUI extends Application {
     private Label statusLabel;
     private Tab explanationTab;
     private TabPane tabPane;
+    private ComboBox<String> explanationMode;
+    private HBox radiusBox;
     
     private ExplanationWorker currentWorker;
     
     // Configurazione iniziale - memorizzata in memoria
     private String configuredPropertyFile;
     private String configuredDatabaseName;
-    private int lastAcceptedRadius = -1; // Track the last radius used/displayed
+    private int lastAcceptedRadius = -2; // Track the last radius used/displayed
 
     @Override
     public void start(Stage primaryStage) {
@@ -97,7 +118,7 @@ public class ExplainableAIOntopGUI extends Application {
         Label lambdaLabel = new Label("Data samples:");
         lambdaLabel.setPrefWidth(120);
         lambdaFileField = new TextField();
-        lambdaFileField.setPrefWidth(500);
+        lambdaFileField.setPrefWidth(550);
         lambdaFileField.setPromptText("Select CSV file with data samples to explain");
         Button browseLambdaButton = new Button("Browse...");
         browseLambdaButton.setOnAction(e -> {
@@ -113,14 +134,53 @@ public class ExplainableAIOntopGUI extends Application {
         });
         lambdaFileBox.getChildren().addAll(lambdaLabel, lambdaFileField, browseLambdaButton);
 
+        // Explanation mode selection
+        HBox modeBox = new HBox(10);
+        modeBox.setAlignment(Pos.CENTER_LEFT);
+        Label modeLabel = new Label("Explanation Mode:");
+        modeLabel.setPrefWidth(120);
+        
+        explanationMode = new ComboBox<>();
+        explanationMode.getItems().addAll("Minimally Complete Explanation", "Approximated Explanation");
+        explanationMode.setValue("Minimally Complete Explanation");
+        explanationMode.setPrefWidth(250);
+        
+        
+
+
         // Radius selection
-        HBox radiusBox = new HBox(10);
-        radiusBox.setAlignment(Pos.CENTER_LEFT);
-        Label radiusLabel = new Label("Radius:");
-        radiusLabel.setPrefWidth(120);
-        radiusField = new TextField("1");
+        Label radiusLabel = new Label("Approximation Radius:");
+        radiusLabel.setPrefWidth(140);
+        HBox.setMargin(radiusLabel, new Insets(0, 0, 0, 40));
+        radiusField = new TextField();
         radiusField.setPrefWidth(100);
+
+        radiusBox = new HBox(10);
+        radiusBox.setAlignment(Pos.CENTER_LEFT);
         radiusBox.getChildren().addAll(radiusLabel, radiusField);
+        radiusField.setDisable(true);
+
+        
+        // Show/hide radius field based on mode selection
+        explanationMode.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if ("Minimally Complete Explanation".equals(newVal)) {
+                radiusField.setDisable(true);
+                radiusField.setText("");
+            } else {
+                radiusField.setDisable(false);
+            }
+        });
+
+        modeBox.getChildren().addAll(modeLabel, explanationMode, radiusBox);
+
+        // // Radius selection
+        // HBox radiusBox = new HBox(10);
+        // radiusBox.setAlignment(Pos.CENTER_LEFT);
+        // Label radiusLabel = new Label("Radius:");
+        // radiusLabel.setPrefWidth(120);
+        // radiusField = new TextField("1");
+        // radiusField.setPrefWidth(100);
+        // radiusBox.getChildren().addAll(radiusLabel, radiusField);
 
 
         Button changeDomainButton = new Button("Change Domain");
@@ -128,7 +188,7 @@ public class ExplainableAIOntopGUI extends Application {
         changeDomainButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;");
         changeDomainButton.setOnAction(e -> changeDomain());
 
-        section.getChildren().addAll(titleLabel, lambdaFileBox, radiusBox, changeDomainButton);
+        section.getChildren().addAll(titleLabel, lambdaFileBox, modeBox, changeDomainButton);
         return section;
     }
 
@@ -211,19 +271,25 @@ public class ExplainableAIOntopGUI extends Application {
             showAlert("Error", "Property file does not exist: " + propertyFile);
             return;
         }
-        
+
         int radius;
-        try {
-            radius = Integer.parseInt(radiusField.getText().trim());
-            if (radius < 0) {
-                showAlert("Error", "Radius must be a non-negative integer");
+        String mode = explanationMode.getValue();
+
+        if ("Approximated Explanation".equals(mode)) {
+            try {
+                radius = Integer.parseInt(radiusField.getText().trim());
+                if (radius < 0) {
+                    showAlert("Error", "Radius must be a non-negative integer");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                showAlert("Error", "Invalid radius value");
                 return;
             }
-        } catch (NumberFormatException e) {
-            showAlert("Error", "Invalid radius value");
-            return;
+        } else {
+            radius = -1;
         }
-
+        
         detailsArea.clear();
         explanationArea.clear();
 
@@ -273,7 +339,7 @@ public class ExplainableAIOntopGUI extends Application {
         });
 
         currentWorker = new ExplanationWorker(
-            propertyFile, lambdaFile, radius, outputCallback, explCallback, 
+            propertyFile, lambdaFile, mode, radius, outputCallback, explCallback, 
             onComplete, onError, onStopped
         );
         
@@ -307,10 +373,15 @@ public class ExplainableAIOntopGUI extends Application {
         headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 13px;");
         headerBox.getChildren().add(headerLabel);
         
-        // Content section
+        // Content section        
         VBox contentBox = new VBox(5);
         contentBox.setStyle("-fx-padding: 15px;");
-        Label messageLabel = new Label("Do you want to compute an explanation with a different radius?");
+        Label messageLabel;
+        if (explanationMode.getValue().equals("Minimally Complete Explanation")) {
+            messageLabel = new Label("Do you want to try approximating the explanation through the radius parameter?");
+        } else {
+            messageLabel = new Label("Do you want to compute an explanation with a different radius?");
+        }
         messageLabel.setStyle("-fx-font-size: 13px;");
         messageLabel.setWrapText(true);
         contentBox.getChildren().add(messageLabel);
@@ -337,41 +408,96 @@ public class ExplainableAIOntopGUI extends Application {
         
         root.getChildren().addAll(headerBox, contentBox, buttonBox);
         
-        Scene scene = new Scene(root, 450, 150);
+        Scene scene = new Scene(root, 600, 150);
         dialogStage.setScene(scene);
         dialogStage.show();
     }
     
     private void promptForNewRadius() {
-        TextInputDialog radiusDialog = new TextInputDialog("1");
+        Dialog<Pair<String, String>> radiusDialog = new Dialog<>();
         radiusDialog.setTitle("New Radius");
-        radiusDialog.setHeaderText("Enter new radius value");
-        radiusDialog.setContentText("Radius:");
+        radiusDialog.setHeaderText("Enter new radius value or choose the minimally complete computation");
         
-        radiusDialog.showAndWait().ifPresent(radiusStr -> {
-            try {
-                int newRadius = Integer.parseInt(radiusStr.trim());
-                if (newRadius < 0) {
-                    showAlert("Invalid Radius", "Radius must be a non negative integer.");
+        radiusDialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField newRadius = new TextField();
+        newRadius.setText("1");
+        ComboBox<String> newMode = new ComboBox<>();
+        newMode.getItems().addAll("Minimally Complete Explanation", "Approximated Explanation");
+        newMode.setValue("Approximated Explanation");
+
+        grid.add(new Label("Radius:"), 0, 0);
+        grid.add(newRadius, 1, 0);
+        grid.add(new Label("Type:"), 0, 1);
+        grid.add(newMode, 1, 1);
+
+        newMode.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.equals("Minimally Complete Explanation")) {
+                newRadius.setDisable(true);
+                newRadius.setText("");
+            } else {
+                newRadius.setDisable(false);
+            }
+        });
+
+        radiusDialog.getDialogPane().setContent(grid);
+
+        radiusDialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return new Pair<>(newRadius.getText(), newMode.getValue());
+            }
+            return null;
+        });
+
+
+        radiusDialog.showAndWait().ifPresent(data -> {
+            int newRadiusValue;
+            String radiusText = data.getKey();
+            String mode = data.getValue();
+            
+            if (mode.equals("Minimally Complete Explanation")) {
+                // Minimally complete mode
+                newRadiusValue = -1;
+                radiusField.setText("");
+                explanationMode.setValue("Minimally Complete Explanation");
+            } else {
+                // Approximated mode
+                if (radiusText == null || radiusText.trim().isEmpty()) {
+                    showAlert("Invalid Input", "Please enter a valid non negative integer for radius.");
                     return;
                 }
                 
-                // Check if explanation file exists for this radius
-                String explFilePath = getExplanationFilePath(newRadius);
-                File explFile = new File(explFilePath);
-                
-                if (explFile.exists()) {
-                    // Display existing explanation
-                    displayExistingExplanation(explFile, newRadius);
-                } else {
-                    // Update radius field and compute new explanation
-                    radiusField.setText(String.valueOf(newRadius));
-                    startExplanation();
+                try {
+                    newRadiusValue = Integer.parseInt(radiusText.trim());
+                    if (newRadiusValue < 0) {
+                        showAlert("Invalid Radius", "Radius must be a non negative integer.");
+                        return;
+                    }
+                    radiusField.setText(String.valueOf(newRadiusValue));
+                    explanationMode.setValue("Approximated Explanation");
+                } catch (NumberFormatException e) {
+                    showAlert("Invalid Input", "Please enter a valid integer for radius.");
+                    return;
                 }
-                
-            } catch (NumberFormatException e) {
-                showAlert("Invalid Input", "Please enter a valid integer for radius.");
             }
+            
+            // Check if explanation file exists for this radius
+            String explFilePath = getExplanationFilePath(newRadiusValue);
+            File explFile = new File(explFilePath);
+
+            if (explFile.exists()) {
+                // Display existing explanation
+                displayExistingExplanation(explFile, newRadiusValue);
+            } else {
+                // Update radius field and compute new explanation
+                startExplanation();
+            }
+                
         });
     }
     
@@ -414,13 +540,14 @@ public class ExplainableAIOntopGUI extends Application {
     }
     
     private void deleteOtherExplanationFiles() {
-        if (lastAcceptedRadius == -1 || configuredDatabaseName == null) {
+        if (lastAcceptedRadius == -2 || configuredDatabaseName == null) {
             // No valid radius to keep, or no database configured
             return;
         }
         
         try {
-            File outputDir = new File("output/" + configuredDatabaseName);
+            String outputDirPath = Paths.get("output", configuredDatabaseName).toString();
+            File outputDir = new File(outputDirPath);
             if (!outputDir.exists() || !outputDir.isDirectory()) {
                 return;
             }
@@ -493,7 +620,7 @@ public class ExplainableAIOntopGUI extends Application {
                 statusLabel.setText("Ready");
                 
                 // Reset configuration
-                lastAcceptedRadius = -1;
+                lastAcceptedRadius = -2;
                 
                 // Show setup dialog
                 if (!showInitialSetupDialog()) {

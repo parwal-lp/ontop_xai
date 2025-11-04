@@ -115,6 +115,19 @@ public interface IUtils {
     List<MembershipAssertion> generateBorderN(List<String> tuple, File abox, int radius, PrintStream logOut) throws IOException;
 
 
+
+	/**
+	 * Generates the border with maximum radius of a given tuple from lambda
+	 * @param tuple tuple from lambda
+	 * @param abox abox file materialization
+	 * @param logOut print stream del file utilizzato per stampare i log per scopi di debug
+	 * @return the border with maximum radius of the given tuple
+	 * @throws IOException
+	 */
+    List<MembershipAssertion> generateBorderMax(List<String> tuple, File abox, PrintStream logOut) throws IOException;
+
+
+
 	/**
 	 * Generates the CQ disjunct with variables stating from the border with constants
 	 * @param tuple tuple from lambda
@@ -134,6 +147,7 @@ public interface IUtils {
 	 * @throws IOException
 	 */
 	List<MembershipAssertion> refineBorder(List<MembershipAssertion> border, File abox, OWLOntology tbox, PrintStream logOut)	throws IOException;
+
 
 
 

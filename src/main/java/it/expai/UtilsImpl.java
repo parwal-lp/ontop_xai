@@ -219,6 +219,82 @@ public class UtilsImpl implements IUtils {
         return new LinkedList<MembershipAssertion>(disjunct);
     }
 
+	@Override
+    public List<MembershipAssertion> generateBorderMax(List<String> tuple, File abox, PrintStream logOut) throws IOException {
+    	Set<String> allFoundTerms = new HashSet<>(tuple);
+    	Set<MembershipAssertion> disjunct = new HashSet<>();
+		
+		// traccia le assertions trovate e aggiunte usando una chiave custom stringa
+		// serve perché l'oggetto assertion viene creato appena prima di aggiungerlo a disjunct
+		// e quindi controllando l'hash non verrebbe mai trovata dentro il set disjunct, perché ogni volta ha un hash nuovo quello appena creato
+		//diverso da quelli inserito prima
+		Set<String> addedAssertionKeys = new HashSet<>();
+		
+		//settato all'inizio così solo per non lasciarlo vuoto, e farlo entrare nel while, 
+		//appena entra nel while viene svuotato alla prima iterazione
+		Set<String> newTerms = new HashSet<>(tuple); 
+
+
+		int currentRadius = 0;
+		//se all'avvio del ciclo newTerms è già empty, significa che non ho trovato nulla di nuovo
+		//e quindi sono già al raggio massimo
+		//posso uscire e ritornare il border
+		while (!newTerms.isEmpty()) {
+			newTerms = new HashSet<>(); //qui vado a mettere quelli nuovi che serviranno al prossimo raggio
+			
+			FileReader fr = new FileReader(abox);
+			BufferedReader br = new BufferedReader(fr);
+			String row;
+
+			while ((row = br.readLine()) != null) {
+				MembershipAssertion assertion = assertionFromTriple(row);
+				
+				
+				if(assertion instanceof Concept) {
+					Concept mac = (Concept)assertion;
+					String term = mac.getConceptTerm();
+
+					String assertionKey = "C:" + mac.getConceptName() + ":" + term;
+
+
+					if(allFoundTerms.contains(term) && !addedAssertionKeys.contains(assertionKey)) {
+						disjunct.add(assertion);
+						addedAssertionKeys.add(assertionKey);
+						newTerms.add(mac.getConceptName());
+					}
+				}
+				else if(assertion instanceof Role) {
+					Role mar = (Role)assertion;
+					String term_domain = mar.getDomainTerm();
+					String term_range = mar.getRangeTerm();
+
+					String assertionKey = "R:" + mar.getNamespace() + mar.getLocalName() + ":" + term_domain + ":" + term_range;
+					
+					if(allFoundTerms.contains(term_domain) && !addedAssertionKeys.contains(assertionKey)) {
+						disjunct.add(assertion);
+						addedAssertionKeys.add(assertionKey);
+						newTerms.add(term_range);
+					}
+					else if(allFoundTerms.contains(term_range) && !addedAssertionKeys.contains(assertionKey)) {
+						disjunct.add(assertion);
+						addedAssertionKeys.add(assertionKey);
+						newTerms.add(term_domain);
+					}
+				}
+
+			}
+			br.close();
+
+			//logOut.println("\nterms used to generate disjuncts at radius "+currentRadius+": "+newTerms);
+			if (logOut != null) logOut.println("disjunct size at radius "+currentRadius+": "+disjunct.size());
+
+			allFoundTerms.addAll(newTerms);
+			currentRadius++;
+
+		}
+        return new LinkedList<MembershipAssertion>(disjunct);
+    }
+
 
 	@Override
 	public List<MembershipAssertion> refineBorder(List<MembershipAssertion> border, File abox, OWLOntology tbox, PrintStream logOut) throws IOException {
