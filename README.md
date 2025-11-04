@@ -48,15 +48,15 @@ java -jar ontop_xai.jar
     - The name of the database instance in MySQL to connect to
     - The ontology file for the chosen domain of interest
     - The mapping file linking the database instance to the domain ontology
-2. **Load Lambda File**: In the next window, select the .csv file containing the classification output (i.e., the data samples you want to explain)
+2. **Load Lambda File**: In the next window, select the .csv file containing the classification output (i.e., the data samples you want to explain). Each row in the file should represent a tuple in the form `value_1,value_2,...,value_n`, and the file should not include a header.
 4. **Set Radius**: Adjust the explanation radius with a non negative number (default: 1)
 5. **Generate Explanation**: Click "Compute Explanation" to start the explanation computation
 6. **Adjust Radius**: Once the computation is completed, the explanation is displayed. You can either choose to keep it and save it to file, or recompute it with a different radius
 7. **View Results**: When you obtain an explanation that is suitable for your needs, answer "no" when prompted to adjust the radius again. The computed explanation will be saved to: `output/<dbname>/explanation_<YY-mm-dd_HH:mm:ss>.txt`
 
 During execution the tool creates two new folders in the same location of the `ontop_xai.jar` file:
-- `output/` contains one subfolder per domain, containing the generated explanation files (e.g. `output/books/explanation_25-10-30_10:12:42.txt`), and a log file for debug purposes only.
-- `domains/` stores per‑domain configuration and resources, used to speed up subsequent runs on the same domain (e.g. `domains/books/abox.nt`).
+- `output/` contains one subfolder per domain, containing the generated explanation files (e.g. `output/books/explanation_25-10-30_10:12:42.txt`).
+- `domains/` contains one subfolder per domain, containing configurations and resources, used to speed up subsequent runs on the same domain (e.g. `domains/books/abox.nt`).
 
 
 ## Examples

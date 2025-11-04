@@ -32,7 +32,6 @@ public class ExplainableAIOntop {
     private String mappingFile;
     private String aboxFile;
     private OWLOntology tbox;
-    private String logFile;
     private String explFile;
     private String testFile;
     private boolean stopFlag = false;
@@ -48,7 +47,17 @@ public class ExplainableAIOntop {
         // ========================================================
     }
 
-    public int computeExplanation(String propertyFile, String lambdaFile, int radius, Consumer<String> explCallback) throws Exception {
+    /**
+     * Compute explanation for given domain, lambda and radius
+     * @param propertyFile file containing paths to all the files needed to define the domain (automatically ocmputed by the system iat the startup)
+     * @param lambdaFile file containing the tuples to explain (.csv)
+     * @param radius radius of the explanation (non negative integer)
+     * @param explCallback callback function to receive explanation output lines
+     * @param logFile file to write log information, pass null to disable logging
+     * @return
+     * @throws Exception
+     */
+    public int computeExplanation(String propertyFile, String lambdaFile, int radius, Consumer<String> explCallback, String logFile) throws Exception {
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
@@ -62,7 +71,6 @@ public class ExplainableAIOntop {
         owlFile = p.getProperty("owlFile");
         mappingFile = p.getProperty("mappingFile");
         aboxFile = p.getProperty("aboxFile");
-        logFile = p.getProperty("logFile");
         testFile = "testFile.txt";
         
         // Use radius-specific explanation file
@@ -78,10 +86,12 @@ public class ExplainableAIOntop {
             System.out.println("Created directory: " + explFileObj.getParentFile().getAbsolutePath());
         }
         
-        File logFileObj = new File(logFile);
-        if (logFileObj.getParentFile() != null && !logFileObj.getParentFile().exists()) {
-            logFileObj.getParentFile().mkdirs();
-            System.out.println("Created directory: " + logFileObj.getParentFile().getAbsolutePath());
+        if (logFile != null && logFile != "") {
+            File logFileObj = new File(logFile);
+            if (logFileObj.getParentFile() != null && !logFileObj.getParentFile().exists()) {
+                logFileObj.getParentFile().mkdirs();
+                System.out.println("Created directory: " + logFileObj.getParentFile().getAbsolutePath());
+            }
         }
 
         File testFileObj = new File(testFile);
@@ -106,8 +116,12 @@ public class ExplainableAIOntop {
             }
         };
 
-
-        PrintStream logOut = new PrintStream(new FileOutputStream(logFile));
+        PrintStream logOut;
+        if (logFile != null) {
+            logOut = new PrintStream(new FileOutputStream(logFile));
+        } else {
+            logOut = null;
+        }
         PrintStream testOut = new PrintStream(new FileOutputStream(testFile, true));
         long start, end;
         float seconds;
@@ -164,9 +178,9 @@ public class ExplainableAIOntop {
                 long numberOfTriples = graphQuery.getTripleCountSoFar();
                 end = System.currentTimeMillis();
                 seconds=((end - start)/1000F);
-                if (!stopFlag) {
-                    System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds); 
-                    logOut.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
+                if (!stopFlag) {                    
+                    System.out.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
+                    if (logOut!=null) logOut.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
                     testOut.println("Generated Abox with "+numberOfTriples+" triples in "+seconds);
                 }
                 abox = Paths.get(aboxFile).toFile();
@@ -200,7 +214,7 @@ public class ExplainableAIOntop {
         end = System.nanoTime();
         if (!stopFlag){
             System.out.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds"); 
-            logOut.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
+            if (logOut != null) logOut.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
             testOut.println("Computed " + existentialVars.size() + " existential variables in " + (end - start) / 1_000_000_000.0 + " seconds");
         }
 
@@ -281,18 +295,19 @@ public class ExplainableAIOntop {
         System.out.println("\n============ END COMPUTATION ============");
         if (totElapsedTime > 60_000_000_000L) {
             System.out.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
-            logOut.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
+            if (logOut != null) logOut.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0 / 60.0) + " minutes]");
         }
         else {
             System.out.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
-            logOut.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
+            if (logOut != null) logOut.println("Total time for computing the explanation [" + (totElapsedTime / 1_000_000_000.0) + " seconds]");
         }
-        
-        logOut.println("\n============ AVG STATISTICS ============");
-        logOut.println("Average time to compute border: " + ((avgBorder / lambdaSize) / 1_000_000_000.0) + " seconds");
-        logOut.println("Average time to refine border: " + ((avgRefine / lambdaSize) / 1_000_000_000.0) + " seconds");
-        logOut.println("Average time to compute SPARQL disjunct: " + ((avgDisjunct / lambdaSize) / 1_000_000_000.0) + " seconds");
-        logOut.println("Average time total computation per tuple: " + ((avgTuple / lambdaSize) / 1_000_000_000.0) + " seconds");
+        if (logOut != null) {
+            logOut.println("\n============ AVG STATISTICS ============");
+            logOut.println("Average time to compute border: " + ((avgBorder / lambdaSize) / 1_000_000_000.0) + " seconds");
+            logOut.println("Average time to refine border: " + ((avgRefine / lambdaSize) / 1_000_000_000.0) + " seconds");
+            logOut.println("Average time to compute SPARQL disjunct: " + ((avgDisjunct / lambdaSize) / 1_000_000_000.0) + " seconds");
+            logOut.println("Average time total computation per tuple: " + ((avgTuple / lambdaSize) / 1_000_000_000.0) + " seconds");
+        }
         
         // =======================
         // Compute Certain Answers
@@ -308,7 +323,7 @@ public class ExplainableAIOntop {
             
 
         fileOut.close();
-        logOut.close();
+        if (logOut != null) logOut.close();
 
         
         repo.shutDown();
@@ -319,19 +334,17 @@ public class ExplainableAIOntop {
 
 	public static void main(String[] args) throws Exception {
 
-        ExplainableAIOntop kg_xai = new ExplainableAIOntop();
+        // ExplainableAIOntop kg_xai = new ExplainableAIOntop();
 
-        // for (int i = 0; i < 11; i++) {
-            kg_xai.computeExplanation(
-                "domains/npd/npd.properties",
-                "/home/laura/Downloads/lambda_npd_arity1.csv",
-                3,
-                null
-            );
-        // }
+        // kg_xai.computeExplanation(
+        //     "domains/npd/npd.properties",
+        //     "/home/laura/Downloads/lambda_npd_arity1.csv",
+        //     0,
+        //     null,
+        //     "output/npd/log.txt"
+        // );
 
-
-        // ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
+        ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
 
 	}
 

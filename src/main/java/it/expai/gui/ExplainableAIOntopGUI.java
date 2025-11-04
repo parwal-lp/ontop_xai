@@ -672,9 +672,6 @@ public class ExplainableAIOntopGUI extends Application {
         String[] aboxPath = {"domains", dbName, "abox.nt"};
         fullProps.setProperty("aboxFile", String.join(File.separator, aboxPath));
 
-        String[] logPath = {"output", dbName, "log.txt"};
-        fullProps.setProperty("logFile", String.join(File.separator, logPath));
-
         String[] explPath = {"output", dbName, "explanation.txt"};
         fullProps.setProperty("explFile", String.join(File.separator, explPath));
         
