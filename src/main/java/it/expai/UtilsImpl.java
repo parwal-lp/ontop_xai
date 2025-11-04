@@ -210,7 +210,7 @@ public class UtilsImpl implements IUtils {
 			br.close();
 
 			//logOut.println("\nterms used to generate disjuncts at radius "+currentRadius+": "+newTerms);
-			logOut.println("disjunct size at radius "+currentRadius+": "+disjunct.size());
+			if (logOut != null) logOut.println("disjunct size at radius "+currentRadius+": "+disjunct.size());
 
 			allFoundTerms.addAll(newTerms);
 			currentRadius++;
@@ -226,8 +226,10 @@ public class UtilsImpl implements IUtils {
 		List<MembershipAssertion> refinedBorder = new LinkedList<>();
 		Set<MembershipAssertion> superfluousAssertions = new HashSet<>();
 		
-		logOut.println("\nStarting Border Refinement");
-		logOut.println("Original border size: " + border.size());
+		if (logOut != null) {
+			logOut.println("\nStarting Border Refinement");
+			logOut.println("Original border size: " + border.size());
+		}
 		
 		// crea reasoner
 		OWLReasonerFactory reasonerFactory = new StructuralReasonerFactory();
@@ -283,7 +285,7 @@ public class UtilsImpl implements IUtils {
 						// Verifica se a2(x) ⊑ a1(x)
 						if (reasoner.getSubClasses(classA1, false).containsEntity(classA2)) {
 							superfluousAssertions.add(a1);
-							//logOut.println("SUPERFLUOUS CONCEPT ASSERTION: " + a1 + " subsumed by " + a2);
+							//if (logOut != null) logOut.println("SUPERFLUOUS CONCEPT ASSERTION: " + a1 + " subsumed by " + a2);
 							break;
 						}
 					}
@@ -294,7 +296,7 @@ public class UtilsImpl implements IUtils {
 						// Verifica se a2(x,x) ⊑ a1(x,y)
 						if (reasoner.getSubObjectProperties(propertyA1, false).containsEntity(propertyA2)) {
 							superfluousAssertions.add(a1);
-							//logOut.println("SUPERFLUOUS ROLE ASSERTION: " + a1 + " subsumed by " + a2);
+							//if (logOut != null) logOut.println("SUPERFLUOUS ROLE ASSERTION: " + a1 + " subsumed by " + a2);
 							break;
 						}
 					}
@@ -311,8 +313,11 @@ public class UtilsImpl implements IUtils {
 		
 		reasoner.dispose();
 		
-		logOut.println("Refined border size: " + refinedBorder.size());
-		logOut.println("Removed " + superfluousAssertions.size() + " superfluous assertions\n");
+		if (logOut != null) {
+			logOut.println("Refined border size: " + refinedBorder.size());
+			logOut.println("Removed " + superfluousAssertions.size() + " superfluous assertions\n");
+		}
+
 		
 		return refinedBorder;
 	}
