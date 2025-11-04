@@ -334,7 +334,7 @@ public class ExplainableAIOntop {
 
 	public static void main(String[] args) throws Exception {
 
-        ExplainableAIOntop kg_xai = new ExplainableAIOntop();
+        // ExplainableAIOntop kg_xai = new ExplainableAIOntop();
 
         // kg_xai.computeExplanation(
         //     "domains/npd/npd.properties",
@@ -345,16 +345,16 @@ public class ExplainableAIOntop {
         //     "output/npd/log.txt"
         // );
 
-        kg_xai.computeExplanation(
-            "domains/books/books.properties",
-            "examples/books/books_lambda.csv",
-            "Minimally Complete Explanation",
-            -1,
-            null,
-            "output/books/log.txt"
-        );
+        // kg_xai.computeExplanation(
+        //     "domains/books/books.properties",
+        //     "examples/books/books_lambda.csv",
+        //     "Minimally Complete Explanation",
+        //     -1,
+        //     null,
+        //     "output/books/log.txt"
+        // );
 
-        // ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
+        ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
 
 	}
 
