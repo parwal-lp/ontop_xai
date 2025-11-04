@@ -551,7 +551,8 @@ public class ExplainableAIOntopGUI extends Application {
         }
         
         try {
-            File outputDir = new File("output/" + configuredDatabaseName);
+            String outputDirPath = Paths.get("output", configuredDatabaseName).toString();
+            File outputDir = new File(outputDirPath);
             if (!outputDir.exists() || !outputDir.isDirectory()) {
                 return;
             }
