@@ -50,13 +50,14 @@ public class ExplainableAIOntop {
      * Compute explanation for given domain, lambda and radius
      * @param propertyFile file containing paths to all the files needed to define the domain (automatically ocmputed by the system iat the startup)
      * @param lambdaFile file containing the tuples to explain (.csv)
-     * @param radius radius of the explanation (non negative integer)
+     * @param mode explanation mode: "Minimally Complete Explanation" or "Approximated Explanation"
+     * @param radius radius of the explanation (non negative integer), automatically set to -1 is the mode is "Minimally Complete Explanation"
      * @param explCallback callback function to receive explanation output lines
      * @param logFile file to write log information, pass null to disable logging
      * @return
      * @throws Exception
      */
-    public int computeExplanation(String propertyFile, String lambdaFile, int radius, Consumer<String> explCallback, String logFile) throws Exception {
+    public int computeExplanation(String propertyFile, String lambdaFile, String mode, int radius, Consumer<String> explCallback, String logFile) throws Exception {
         // ========================================================
         // Setup Properties for connection to Database and to Ontop
         // ========================================================
@@ -246,9 +247,16 @@ public class ExplainableAIOntop {
             System.out.println("\n============ Processing tuple "+count +"/"+lambdaSize+": "+tuple+" ============");
             startTuple = System.nanoTime();
 
-            start = System.nanoTime();
-			border = ui.generateBorderN(tuple, abox, radius, logOut);
-            end = System.nanoTime();
+            if (radius == -1 && mode.equals("Minimally Complete Explanation")) {
+                start = System.nanoTime();
+                border = ui.generateBorderMax(tuple, abox, logOut);
+                end = System.nanoTime();
+            } else {
+                start = System.nanoTime();
+                border = ui.generateBorderN(tuple, abox, radius, logOut);
+                end = System.nanoTime();
+            }
+
             //fileOut.println("\nDISJUNCT FOR TUPLE "+tuple);
             //fileOut.println(temp);
             avgBorder += (end - start);
@@ -328,12 +336,22 @@ public class ExplainableAIOntop {
 
         ExplainableAIOntop kg_xai = new ExplainableAIOntop();
 
+        // kg_xai.computeExplanation(
+        //     "domains/npd/npd.properties",
+        //     "examples/npd/npd-lambda.csv",
+        //     "Approximated Explanation",
+        //     1,
+        //     null,
+        //     "output/npd/log.txt"
+        // );
+
         kg_xai.computeExplanation(
-            "domains/npd/npd.properties",
-            "examples/npd/npd-lambda.csv",
-            1,
+            "domains/books/books.properties",
+            "examples/books/books_lambda.csv",
+            "Minimally Complete Explanation",
+            -1,
             null,
-            "output/npd/log.txt"
+            "output/books/log.txt"
         );
 
         // ExplainableAIOntopGUI.launch(ExplainableAIOntopGUI.class, args);
