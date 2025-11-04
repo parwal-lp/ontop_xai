@@ -1,18 +1,39 @@
 package it.expai.gui;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.function.Consumer;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import java.io.*;
-import java.nio.file.Paths;
-import java.util.function.Consumer;
 
 public class ExplainableAIOntopGUI extends Application {
 
@@ -27,6 +48,8 @@ public class ExplainableAIOntopGUI extends Application {
     private Label statusLabel;
     private Tab explanationTab;
     private TabPane tabPane;
+    private ComboBox<String> explanationMode;
+    private HBox radiusBox;
     
     private ExplanationWorker currentWorker;
     
@@ -97,7 +120,7 @@ public class ExplainableAIOntopGUI extends Application {
         Label lambdaLabel = new Label("Data samples:");
         lambdaLabel.setPrefWidth(120);
         lambdaFileField = new TextField();
-        lambdaFileField.setPrefWidth(500);
+        lambdaFileField.setPrefWidth(550);
         lambdaFileField.setPromptText("Select CSV file with data samples to explain");
         Button browseLambdaButton = new Button("Browse...");
         browseLambdaButton.setOnAction(e -> {
@@ -113,14 +136,52 @@ public class ExplainableAIOntopGUI extends Application {
         });
         lambdaFileBox.getChildren().addAll(lambdaLabel, lambdaFileField, browseLambdaButton);
 
+        // Explanation mode selection
+        HBox modeBox = new HBox(10);
+        modeBox.setAlignment(Pos.CENTER_LEFT);
+        Label modeLabel = new Label("Explanation Mode:");
+        modeLabel.setPrefWidth(120);
+        
+        explanationMode = new ComboBox<>();
+        explanationMode.getItems().addAll("Minimally Complete Explanation", "Approximated Explanation");
+        explanationMode.setValue("Minimally Complete Explanation");
+        explanationMode.setPrefWidth(250);
+        
+        
+
+
         // Radius selection
-        HBox radiusBox = new HBox(10);
-        radiusBox.setAlignment(Pos.CENTER_LEFT);
-        Label radiusLabel = new Label("Radius:");
-        radiusLabel.setPrefWidth(120);
+        Label radiusLabel = new Label("Approximation Radius:");
+        radiusLabel.setPrefWidth(140);
+        HBox.setMargin(radiusLabel, new Insets(0, 0, 0, 40));
         radiusField = new TextField("1");
         radiusField.setPrefWidth(100);
+
+        radiusBox = new HBox(10);
+        radiusBox.setAlignment(Pos.CENTER_LEFT);
         radiusBox.getChildren().addAll(radiusLabel, radiusField);
+        radiusField.setDisable(true);
+
+        
+        // Show/hide radius field based on mode selection
+        explanationMode.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if ("Minimally Complete Explanation".equals(newVal)) {
+                radiusField.setDisable(true);
+            } else {
+                radiusField.setDisable(false);
+            }
+        });
+
+        modeBox.getChildren().addAll(modeLabel, explanationMode, radiusBox);
+
+        // // Radius selection
+        // HBox radiusBox = new HBox(10);
+        // radiusBox.setAlignment(Pos.CENTER_LEFT);
+        // Label radiusLabel = new Label("Radius:");
+        // radiusLabel.setPrefWidth(120);
+        // radiusField = new TextField("1");
+        // radiusField.setPrefWidth(100);
+        // radiusBox.getChildren().addAll(radiusLabel, radiusField);
 
 
         Button changeDomainButton = new Button("Change Domain");
@@ -128,7 +189,7 @@ public class ExplainableAIOntopGUI extends Application {
         changeDomainButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;");
         changeDomainButton.setOnAction(e -> changeDomain());
 
-        section.getChildren().addAll(titleLabel, lambdaFileBox, radiusBox, changeDomainButton);
+        section.getChildren().addAll(titleLabel, lambdaFileBox, modeBox, changeDomainButton);
         return section;
     }
 
