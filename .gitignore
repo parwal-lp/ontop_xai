@@ -41,6 +41,7 @@ plugin-runtime
 # Log files
 **/output.txt
 **/log.txt
+**/testFile.txt
 
 # compiled packages
 *.jar
