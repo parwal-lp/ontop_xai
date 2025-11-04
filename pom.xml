@@ -6,7 +6,6 @@
 
     <version>5.2.0</version>
 
-
     <properties>
         <ontop.version>5.2.0</ontop.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
@@ -28,7 +27,6 @@
             <version>${ontop.version}</version>
         </dependency>
         
-
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
